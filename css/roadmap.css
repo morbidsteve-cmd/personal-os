@@ -1,0 +1,6 @@
+/* Project Roadmap — status pills (color set dynamically per status in JS) */
+
+.roadmap-status-pill {
+  cursor: pointer; font-size: 10.5px; font-weight: 700; padding: 5px 10px;
+  border-radius: 100px; white-space: nowrap;
+}
