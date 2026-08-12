@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Personal OS">
+<meta name="theme-color" content="#12161A">
+<title>Personal OS</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #12161A; color: #E8E4DA; min-height: 100vh;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .display { font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 14px; border-bottom: 1px solid #23282E;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-badge {
+    width: 34px; height: 34px; border-radius: 8px; background: #C98A3F;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; color: #12161A;
+  }
+  .brand-title { font-size: 17px; font-weight: 600; }
+  .brand-sub { font-size: 10.5px; color: #6B7178; letter-spacing: 1px; text-transform: uppercase; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4A9A6A; }
+  .status-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6B7178; }
+
+  .content { padding: 20px; padding-bottom: 100px; max-width: 640px; margin: 0 auto; }
+
+  .module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .module-card {
+    background: #181D23; border: 1px solid #23282E; border-radius: 14px; padding: 18px 16px;
+    cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .module-card:active { border-color: #C98A3F; }
+  .module-icon { font-size: 24px; margin-bottom: 10px; }
+  .module-name { font-size: 14.5px; font-weight: 600; margin-bottom: 3px; }
+  .module-status { font-size: 10.5px; color: #6B7178; }
+  .module-status.live { color: #4A9A6A; }
+
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; background: #181D23;
+    border-top: 1px solid #23282E; display: flex; padding: 8px 4px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .nav-item {
+    flex: 1; text-align: center; padding: 8px 2px; color: #6B7178; font-size: 10px;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .nav-item.active { color: #C98A3F; }
+  .nav-icon { font-size: 18px; }
+
+  .module-view { display: none; }
+  .module-view.active { display: block; }
+  .module-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .back-btn {
+    background: #181D23; border: 1px solid #23282E; color: #E8E4DA; width: 34px; height: 34px;
+    border-radius: 8px; cursor: pointer; font-size: 16px;
+  }
+  .placeholder {
+    text-align: center; padding: 60px 20px; color: #6B7178; border: 1px dashed #23282E; border-radius: 14px;
+  }
+  .placeholder .big { font-size: 32px; margin-bottom: 10px; }
+  .placeholder .title { color: #E8E4DA; font-size: 16px; margin-bottom: 6px; }
+  .placeholder .sub { font-size: 12.5px; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #12161A; color: #E8E4DA; min-height: 100vh; padding-bottom: 100px;
+  }
+  .serif { font-family: Georgia, 'Times New Roman', serif; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .icon-badge {
+    width: 42px; height: 42px; border-radius: 10px; background: #C98A3F;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    box-shadow: 0 4px 12px rgba(201,162,39,0.35); flex-shrink: 0;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; }
+  .subtitle { color: #6B7178; font-size: 12px; margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 9px; background: #181D23;
+    border: 1px solid #23282E; color: #C98A3F; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  #importFile { display: none; }
+
+  .toast {
+    position: fixed; top: 78px; left: 50%; transform: translateX(-50%);
+    background: #181D23; border: 1px solid #C98A3F; color: #E8E4DA;
+    padding: 10px 18px; border-radius: 10px; font-size: 13px; z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .toast.show { opacity: 1; }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-box { background: #181D23; border-radius: 10px; padding: 12px 10px; border: 1px solid #23282E; }
+  .stat-value { font-size: 19px; font-weight: 700; color: #C98A3F; }
+  .stat-label { font-size: 10px; color: #6B7178; margin-top: 2px; }
+
+  .search-box { position: relative; margin-bottom: 12px; }
+  .search-box input {
+    width: 100%; background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+    border-radius: 10px; padding: 11px 14px 11px 36px; font-size: 14px;
+  }
+  .search-box .icon { position: absolute; left: 12px; top: 11px; color: #6B7178; font-size: 14px; }
+  .search-hint { font-size: 11px; color: #5A6068; margin: -8px 0 14px 4px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; text-align: center; padding: 9px 0; border-radius: 9px; font-size: 13px;
+    font-weight: 600; cursor: pointer; background: #181D23; color: #6B7178;
+    border: 1px solid #23282E;
+  }
+  .tab.active { background: #C98A3F; color: #12161A; border-color: #C98A3F; }
+
+  .empty-state {
+    text-align: center; padding: 44px 20px; color: #6B7178;
+    border: 1px dashed #23282E; border-radius: 14px;
+  }
+  .empty-state .big { font-size: 30px; margin-bottom: 8px; }
+  .empty-state .title { color: #E8E4DA; font-size: 16px; margin-bottom: 4px; }
+
+  .session-card {
+    background: #181D23; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    border: 1px solid #23282E; cursor: pointer;
+  }
+  .session-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .session-location { font-size: 17px; font-weight: 700; }
+  .session-date { color: #6B7178; font-size: 12px; }
+  .session-sub { color: #9BA0A8; font-size: 12.5px; margin-bottom: 8px; }
+  .stars { color: #C98A3F; font-size: 12px; letter-spacing: 1px; }
+  .species-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: #1F252B; color: #C9CDD3; font-size: 11.5px; padding: 3px 9px;
+    border-radius: 100px; border: 1px solid #2C333B;
+  }
+  .catch-count { color: #C98A3F; font-size: 12px; font-weight: 600; }
+
+  .location-group { margin-bottom: 18px; }
+  .location-group-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px; padding: 0 2px;
+  }
+  .location-group-header .name { font-size: 15px; font-weight: 700; color: #C98A3F; }
+  .location-group-header .count { font-size: 11.5px; color: #6B7178; }
+
+  .fab {
+    position: fixed; bottom: 92px; right: 22px; width: 56px; height: 56px;
+    border-radius: 28px; background: #C98A3F; border: none; cursor: pointer;
+    font-size: 28px; color: #12161A; box-shadow: 0 6px 20px rgba(201,162,39,0.45);
+    display: flex; align-items: center; justify-content: center; z-index: 10;
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(6,20,20,0.72); display: none;
+    align-items: flex-end; justify-content: center; z-index: 50;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #12161A; border-radius: 18px 18px 0 0; width: 100%; max-width: 640px;
+    max-height: 88vh; overflow-y: auto; padding: 20px 18px 28px;
+    border: 1px solid #23282E; border-bottom: none;
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .modal-header h2 { font-size: 19px; font-weight: 700; }
+  .close-btn { background: none; border: none; color: #6B7178; font-size: 22px; cursor: pointer; }
+
+  .form-section-title {
+    font-size: 12px; font-weight: 700; color: #C98A3F; text-transform: uppercase;
+    letter-spacing: 0.5px; margin: 18px 0 10px; padding-top: 12px; border-top: 1px solid #1F252B;
+  }
+  .form-section-title:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block; color: #6B7178; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+    border-radius: 9px; padding: 10px 12px; font-size: 14.5px; font-family: inherit;
+  }
+  .field textarea { resize: vertical; }
+  .row-2 { display: flex; gap: 10px; }
+  .row-2 .field { flex: 1; }
+  .row-3 { display: flex; gap: 10px; }
+  .row-3 .field { flex: 1; }
+
+  .error-box {
+    background: #2E1C1C; color: #D99B85; padding: 9px 12px; border-radius: 8px;
+    font-size: 13px; margin-bottom: 14px;
+  }
+  .save-btn {
+    width: 100%; margin-top: 6px; background: #C98A3F; color: #12161A; border: none;
+    border-radius: 10px; padding: 13px 0; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .secondary-btn {
+    width: 100%; margin-top: 8px; background: transparent; color: #6B7178;
+    border: 1px solid #23282E; border-radius: 10px; padding: 11px 0; font-size: 14px;
+    font-weight: 600; cursor: pointer;
+  }
+  .edit-link-btn {
+    background: transparent; border: 1px solid #23282E; color: #C98A3F; font-size: 12px;
+    font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  }
+
+  /* Rating stars picker */
+  .rating-picker { display: flex; gap: 6px; }
+  .rating-star {
+    font-size: 26px; cursor: pointer; color: #3A4048; user-select: none; line-height: 1;
+  }
+  .rating-star.filled { color: #C98A3F; }
+
+  /* GPS */
+  .gps-row { display: flex; gap: 8px; align-items: center; }
+  .gps-row input { flex: 1; }
+  .gps-btn {
+    background: #181D23; border: 1px solid #23282E; color: #C98A3F; font-size: 13px;
+    font-weight: 600; padding: 10px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  }
+  .gps-coords { font-size: 11.5px; color: #6B7178; margin-top: 5px; }
+  .gps-coords a { color: #4A9A6A; }
+
+  /* Photos */
+  .photo-picker-btn {
+    display: inline-flex; align-items: center; gap: 6px; background: #181D23;
+    border: 1px solid #23282E; color: #C98A3F; font-size: 13px; font-weight: 600;
+    padding: 9px 14px; border-radius: 9px; cursor: pointer;
+  }
+  .photo-input { display: none; }
+  .photo-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .photo-thumb { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid #23282E; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb .rm {
+    position: absolute; top: 2px; right: 2px; background: rgba(15,42,42,0.85); color: #D99B85;
+    border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .card-photo-strip { display: flex; gap: 5px; margin-top: 8px; }
+  .card-photo-strip img { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; border: 1px solid #23282E; }
+  .detail-photo-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .detail-photo-strip img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 1px solid #23282E; }
+  .catch-photo-strip { display: flex; gap: 6px; margin-top: 8px; }
+  .catch-photo-strip img { width: 50px; height: 50px; border-radius: 7px; object-fit: cover; border: 1px solid #23282E; }
+
+  /* Location history hint */
+  .location-hint {
+    background: #1F252B; border: 1px solid #2C333B; border-radius: 10px; padding: 10px 12px;
+    margin: -4px 0 12px; font-size: 12.5px; color: #C9CDD3; display: none;
+  }
+  .location-hint.show { display: block; }
+  .location-hint .hint-title { color: #C98A3F; font-weight: 700; font-size: 12px; margin-bottom: 4px; }
+  .location-hint .hint-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+
+  /* Main nav */
+  .main-nav { display: flex; gap: 6px; margin-bottom: 18px; background: #181D23; border-radius: 12px; padding: 4px; border: 1px solid #23282E; overflow-x: auto; }
+  .main-nav-item {
+    flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px; font-size: 12px;
+    font-weight: 600; cursor: pointer; color: #6B7178; white-space: nowrap;
+  }
+  .main-nav-item.active { background: #C98A3F; color: #12161A; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Kit list */
+  .kit-category { margin-bottom: 18px; }
+  .kit-category-title { font-size: 13px; font-weight: 700; color: #C98A3F; margin-bottom: 8px; padding: 0 2px; }
+  .kit-item {
+    display: flex; align-items: center; gap: 10px; background: #181D23; border: 1px solid #23282E;
+    border-radius: 10px; padding: 11px 13px; margin-bottom: 8px;
+  }
+  .kit-item .kit-name { flex: 1; font-size: 14px; }
+  .kit-item .kit-name.need { color: #D99B85; }
+  .kit-toggle {
+    font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 100px;
+    border: 1px solid #23282E; cursor: pointer; background: transparent; color: #6B7178;
+  }
+  .kit-toggle.owned { background: #1F252B; color: #4A9A6A; border-color: #2C333B; }
+  .kit-toggle.need-buy { background: #2E1C1C; color: #D99B85; border-color: #4A2A2A; }
+  .kit-del { background: none; border: none; color: #5A6068; font-size: 15px; cursor: pointer; padding: 2px 4px; }
+  .add-kit-row { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 20px; }
+  .add-kit-row input { flex: 1; background: #181D23; color: #E8E4DA; border: 1px solid #23282E; border-radius: 9px; padding: 10px 12px; font-size: 13.5px; }
+  .add-kit-row select { background: #181D23; color: #E8E4DA; border: 1px solid #23282E; border-radius: 9px; padding: 10px 8px; font-size: 13px; }
+  .add-kit-row button { background: #C98A3F; color: #12161A; border: none; border-radius: 9px; padding: 0 16px; font-weight: 700; cursor: pointer; }
+
+  /* Checklist */
+  .checklist-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .reset-btn { background: transparent; border: 1px solid #23282E; color: #6B7178; font-size: 12px; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+  .checklist-progress { font-size: 12px; color: #6B7178; margin-bottom: 14px; }
+  .checklist-category { margin-bottom: 16px; }
+  .checklist-category-title { font-size: 13px; font-weight: 700; color: #C98A3F; margin-bottom: 8px; padding: 0 2px; }
+  .checklist-item {
+    display: flex; align-items: center; gap: 10px; background: #181D23; border: 1px solid #23282E;
+    border-radius: 10px; padding: 11px 13px; margin-bottom: 7px; cursor: pointer;
+  }
+  .checklist-item.checked { opacity: 0.55; }
+  .checklist-item .box {
+    width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #6B7178; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .checklist-item.checked .box { background: #C98A3F; border-color: #C98A3F; color: #12161A; }
+  .checklist-item .label { flex: 1; font-size: 13.5px; }
+  .checklist-item.checked .label { text-decoration: line-through; }
+  .checklist-del { background: none; border: none; color: #5A6068; font-size: 14px; cursor: pointer; }
+  .add-checklist-row { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 20px; }
+  .add-checklist-row input { flex: 1; background: #181D23; color: #E8E4DA; border: 1px solid #23282E; border-radius: 9px; padding: 10px 12px; font-size: 13.5px; }
+  .add-checklist-row button { background: #C98A3F; color: #12161A; border: none; border-radius: 9px; padding: 0 16px; font-weight: 700; cursor: pointer; }
+
+  /* Gallery */
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .gallery-grid img {
+    width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;
+    border: 1px solid #23282E; cursor: pointer;
+  }
+
+  /* Session detail meta */
+  .session-detail-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 10px; color: #9BA0A8; font-size: 13px; }
+  .session-notes {
+    background: #181D23; border: 1px solid #23282E; border-radius: 10px; padding: 12px;
+    font-size: 13px; color: #C9CDD3; margin-bottom: 12px; line-height: 1.5;
+  }
+  .detail-section { margin-bottom: 14px; }
+  .detail-section-title { font-size: 11px; font-weight: 700; color: #6B7178; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+  .detail-kv { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12.5px; color: #C9CDD3; }
+  .catch-item {
+    background: #181D23; border-radius: 12px; padding: 13px; margin-bottom: 10px;
+    border: 1px solid #23282E; position: relative;
+  }
+  .catch-item .catch-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; }
+  .catch-item .catch-actions button { background: none; border: none; font-size: 13px; cursor: pointer; }
+  .catch-item .edit-icon { color: #6B7178; }
+  .catch-item .del { color: #5A6068; }
+  .catch-item .species { font-size: 15px; font-weight: 700; margin-bottom: 4px; padding-right: 44px; }
+  .catch-item .meta-row { display: flex; flex-wrap: wrap; gap: 5px 12px; font-size: 12px; color: #9BA0A8; }
+  .add-catch-btn {
+    width: 100%; padding: 12px 0; border-radius: 10px; border: 1.5px dashed #3A4048;
+    background: transparent; color: #4A9A6A; font-size: 14px; font-weight: 600;
+    cursor: pointer; margin-bottom: 8px;
+  }
+  .detail-top-actions { display: flex; gap: 8px; margin-bottom: 4px; }
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-badge display">P</div>
+    <div>
+      <div class="brand-title display">Personal OS</div>
+      <div class="brand-sub">Phase 1</div>
+    </div>
+  </div>
+  <div class="status-row mono">
+    <div class="status-dot"></div>
+    <span id="syncStatus">Local only</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- HOME: module grid -->
+  <div class="module-view active" id="view-home">
+    <div class="module-grid" id="moduleGrid"></div>
+  </div>
+
+  <!-- Individual module placeholder views -->
+  <div class="module-view" id="view-module">
+    <div class="module-header">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;" id="moduleTitle">Module</div>
+    </div>
+    <div class="placeholder">
+      <div class="big" id="modulePlaceholderIcon">🔲</div>
+      <div class="title display" id="modulePlaceholderTitle">Coming soon</div>
+      <div class="sub" id="modulePlaceholderSub">This module hasn't been built yet.</div>
+    </div>
+  </div>
+
+  <div class="module-view" id="view-journal">
+    <div class="module-header" style="margin-bottom:8px;">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;">Fishing Journal</div>
+    </div>
+
+
+<div class="wrap">
+  <div class="header">
+    <div class="header-left">
+      <div class="icon-badge">🐟</div>
+      <div>
+        <h1 class="serif">The Logbook</h1>
+        <div class="subtitle" id="subtitle">0 sessions logged</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="exportEntries()" title="Export backup">⬇</button>
+      <button class="icon-btn" onclick="document.getElementById('importFile').click()" title="Import backup">⬆</button>
+      <input type="file" id="importFile" accept=".json" onchange="importEntries(event)">
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="main-nav">
+    <div class="main-nav-item active" id="navJournal" onclick="setMainSection('journal')">📖 Journal</div>
+    <div class="main-nav-item" id="navGallery" onclick="setMainSection('gallery')">🖼 Gallery</div>
+    <div class="main-nav-item" id="navKit" onclick="setMainSection('kit')">🎒 Kit</div>
+    <div class="main-nav-item" id="navChecklist" onclick="setMainSection('checklist')">✅ Checklist</div>
+  </div>
+
+  <div class="section active" id="journalSection">
+
+  <div class="stats" id="statsBox" style="display:none;">
+    <div class="stat-box"><div class="stat-value" id="statSessions">0</div><div class="stat-label">Sessions</div></div>
+    <div class="stat-box"><div class="stat-value" id="statCatches">0</div><div class="stat-label">Total catches</div></div>
+    <div class="stat-box"><div class="stat-value" id="statLocations">0</div><div class="stat-label">Locations</div></div>
+  </div>
+
+  <div class="search-box">
+    <span class="icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search by location or species..." oninput="onSearch()">
+  </div>
+  <div class="search-hint">Matches location, spot, or any species caught in a session</div>
+
+  <div class="tabs">
+    <div class="tab active" id="tabRecent" onclick="setView('recent')">Recent</div>
+    <div class="tab" id="tabByLocation" onclick="setView('byLocation')">By Location</div>
+  </div>
+
+  <div id="emptyState" class="empty-state">
+    <div class="big">🐟</div>
+    <div class="title serif">No sessions yet</div>
+    <div>Log your first trip to start the journal.</div>
+  </div>
+
+  <div id="sessionList"></div>
+
+  </div>
+  <!-- /journalSection -->
+
+  <div class="section" id="gallerySection">
+    <div id="galleryGrid" class="gallery-grid"></div>
+    <div id="galleryEmpty" class="empty-state" style="display:none;">
+      <div class="big">🖼</div>
+      <div class="title serif">No photos yet</div>
+      <div>Photos you add to sessions and catches will show up here.</div>
+    </div>
+  </div>
+
+  <div class="section" id="kitSection">
+    <div class="add-kit-row">
+      <input type="text" id="kitNameInput" placeholder="Add gear item...">
+      <select id="kitCategoryInput">
+        <option>Rods & Reels</option>
+        <option>Terminal Tackle</option>
+        <option>Bait & Groundbait</option>
+        <option>Fish Care</option>
+        <option>Comfort</option>
+        <option>Essentials</option>
+        <option>Other</option>
+      </select>
+      <button onclick="addKitItem()">+</button>
+    </div>
+    <div id="kitList"></div>
+  </div>
+
+  <div class="section" id="checklistSection">
+    <div class="checklist-header-row">
+      <div class="checklist-progress" id="checklistProgress">0 of 0 packed</div>
+      <button class="reset-btn" onclick="resetChecklist()">Reset for next trip</button>
+    </div>
+    <div class="add-checklist-row">
+      <input type="text" id="checklistNameInput" placeholder="Add checklist item...">
+      <button onclick="addChecklistItem()">+</button>
+    </div>
+    <div id="checklistList"></div>
+  </div>
+
+</div>
+
+<button class="fab" onclick="openSessionForm()">+</button>
+
+<!-- New/Edit Session Modal -->
+<div class="modal-overlay" id="sessionModalOverlay" onclick="if(event.target===this) closeSessionForm()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="serif" id="sessionModalTitle">New session</h2>
+      <button class="close-btn" onclick="closeSessionForm()">✕</button>
+    </div>
+    <div id="sessionErrorBox"></div>
+
+    <div class="form-section-title">Where & When</div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="sDate">
+    </div>
+    <div class="field">
+      <label>Location *</label>
+      <input type="text" id="sLocation" placeholder="e.g. Lough Erne, Kesh shore" oninput="onLocationInput()">
+    </div>
+    <div class="location-hint" id="locationHint"></div>
+    <div class="field">
+      <label>Peg / spot</label>
+      <input type="text" id="sPeg" placeholder="e.g. Peg 20">
+    </div>
+    <div class="field">
+      <label>GPS coordinates</label>
+      <div class="gps-row">
+        <input type="text" id="sCoords" placeholder="Not set" readonly>
+        <button type="button" class="gps-btn" onclick="captureGPS()">📍 Use my location</button>
+      </div>
+      <div class="gps-coords" id="gpsStatus"></div>
+    </div>
+    <div class="field">
+      <label>Weather</label>
+      <select id="sWeather">
+        <option>Sunny</option>
+        <option>Overcast</option>
+        <option>Rain</option>
+        <option>Windy</option>
+        <option>Mixed</option>
+      </select>
+    </div>
+
+    <div class="form-section-title">Tackle Setup</div>
+    <div class="row-3">
+      <div class="field"><label>Rod</label><input type="text" id="sRod" placeholder="e.g. Feeder rod"></div>
+      <div class="field"><label>Reel</label><input type="text" id="sReel"></div>
+      <div class="field"><label>Distance</label><input type="text" id="sDistance" placeholder="e.g. 40m"></div>
+    </div>
+    <div class="row-3">
+      <div class="field"><label>Hook</label><input type="text" id="sHook" placeholder="e.g. Size 14"></div>
+      <div class="field"><label>Feeder</label><input type="text" id="sFeeder" placeholder="e.g. 30g"></div>
+      <div class="field"><label>Hookbait</label><input type="text" id="sHookbait" placeholder="e.g. Corn"></div>
+    </div>
+
+    <div class="form-section-title">Observations</div>
+    <div class="row-2">
+      <div class="field"><label>Fish activity</label><input type="text" id="sFishActivity"></div>
+      <div class="field"><label>Bubbles</label><input type="text" id="sBubbles"></div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>Birds</label><input type="text" id="sBirds"></div>
+      <div class="field"><label>Weed</label><input type="text" id="sWeed"></div>
+    </div>
+
+    <div class="form-section-title">Session Notes</div>
+    <div class="field">
+      <label>General notes</label>
+      <textarea id="sNotes" rows="3" placeholder="Conditions, plan, general observations..."></textarea>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>What worked</label><textarea id="sWhatWorked" rows="2"></textarea></div>
+      <div class="field"><label>What didn't</label><textarea id="sWhatDidnt" rows="2"></textarea></div>
+    </div>
+    <div class="field">
+      <label>Plan for next trip</label>
+      <textarea id="sPlanNextTrip" rows="2" placeholder="What would you try differently..."></textarea>
+    </div>
+    <div class="field">
+      <label>Session rating</label>
+      <div class="rating-picker" id="ratingPicker"></div>
+    </div>
+
+    <div class="form-section-title">Photos</div>
+    <div class="field">
+      <label>Location photos</label>
+      <label class="photo-picker-btn" for="sPhotoInput">📷 Add photo</label>
+      <input type="file" id="sPhotoInput" class="photo-input" accept="image/*" multiple onchange="handlePhotoSelect(event, 'session')">
+      <div class="photo-strip" id="sPhotoStrip"></div>
+    </div>
+
+    <button class="save-btn" id="sessionSaveBtn" onclick="saveSession()">Start session</button>
+  </div>
+</div>
+
+<!-- Session Detail Modal -->
+<div class="modal-overlay" id="detailModalOverlay" onclick="if(event.target===this) closeDetail()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="serif" id="detailLocation">Session</h2>
+      <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-top-actions">
+      <button class="edit-link-btn" onclick="editSessionFromDetail()">✎ Edit session</button>
+    </div>
+    <div class="session-detail-meta" id="detailMeta"></div>
+    <div id="detailRating"></div>
+    <div id="detailTackle"></div>
+    <div id="detailObservations"></div>
+    <div id="detailNotesWrap"></div>
+    <div id="detailWrapup"></div>
+    <div id="detailPhotos"></div>
+    <button class="add-catch-btn" onclick="openCatchForm()">+ Add a catch to this session</button>
+    <div id="catchList"></div>
+    <button class="secondary-btn" onclick="deleteSession()">Delete this session</button>
+  </div>
+</div>
+
+<!-- New/Edit Catch Modal -->
+<div class="modal-overlay" id="catchModalOverlay" onclick="if(event.target===this) closeCatchForm()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="serif" id="catchModalTitle">Log a catch</h2>
+      <button class="close-btn" onclick="closeCatchForm()">✕</button>
+    </div>
+    <div id="catchErrorBox"></div>
+    <div class="field">
+      <label>Species *</label>
+      <input type="text" id="cSpecies" placeholder="e.g. Pike, Perch, Brown Trout">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Weight</label>
+        <input type="text" id="cWeight" placeholder="e.g. 4lb 2oz">
+      </div>
+      <div class="field">
+        <label>Length</label>
+        <input type="text" id="cLength" placeholder="e.g. 58cm">
+      </div>
+    </div>
+    <div class="field">
+      <label>Bait / lure</label>
+      <input type="text" id="cBait" placeholder="e.g. Spinner, worm, fly">
+    </div>
+    <div class="field">
+      <label>Time</label>
+      <input type="time" id="cTime">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="cNotes" rows="2" placeholder="Anything worth remembering..."></textarea>
+    </div>
+    <div class="field">
+      <label>Catch photo</label>
+      <label class="photo-picker-btn" for="cPhotoInput">📷 Add photo</label>
+      <input type="file" id="cPhotoInput" class="photo-input" accept="image/*" multiple onchange="handlePhotoSelect(event, 'catch')">
+      <div class="photo-strip" id="cPhotoStrip"></div>
+    </div>
+    <button class="save-btn" id="catchSaveBtn" onclick="saveCatch()">Save catch</button>
+  </div>
+</div>
+
+  </div>
+  <!-- ^ closes view-journal -->
+
+  <!-- TASKS MODULE -->
+  <div class="module-view" id="view-tasks">
+    <div class="module-header" style="margin-bottom:14px;">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;">Task Manager</div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <input type="text" id="taskInput" placeholder="Add a task..." style="flex:1; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:11px 12px; font-size:14px;">
+      <select id="taskPriorityInput" style="background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:0 8px; font-size:12.5px;">
+        <option value="Low">Low</option>
+        <option value="Medium" selected>Medium</option>
+        <option value="High">High</option>
+      </select>
+      <button onclick="addTask()" style="background:#C98A3F; color:#12161A; border:none; border-radius:9px; padding:0 16px; font-weight:700; cursor:pointer;">+</button>
+    </div>
+    <input type="date" id="taskDueInput" style="width:100%; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:10px 12px; font-size:13px; margin-bottom:16px;">
+
+    <div id="taskActiveSection"></div>
+    <div id="taskCompletedSection" style="margin-top:20px;"></div>
+  </div>
+  <!-- ^ closes view-tasks -->
+
+  <!-- DAILY PLANNER MODULE -->
+  <div class="module-view" id="view-planner">
+    <div class="module-header" style="margin-bottom:14px;">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;">Daily Planner</div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:16px;">
+      <button onclick="shiftPlannerDay(-1)" style="background:#181D23; border:1px solid #23282E; color:#E8E4DA; width:36px; height:36px; border-radius:9px; cursor:pointer;">‹</button>
+      <input type="date" id="plannerDateInput" onchange="onPlannerDateChange()" style="flex:1; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:9px 10px; font-size:13.5px; text-align:center;">
+      <button onclick="shiftPlannerDay(1)" style="background:#181D23; border:1px solid #23282E; color:#E8E4DA; width:36px; height:36px; border-radius:9px; cursor:pointer;">›</button>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <input type="time" id="plannerTimeInput" style="background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:10px; font-size:13px; width:110px;">
+      <input type="text" id="plannerActivityInput" placeholder="What's happening..." style="flex:1; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:10px 12px; font-size:14px;">
+      <button onclick="addPlannerItem()" style="background:#C98A3F; color:#12161A; border:none; border-radius:9px; padding:0 16px; font-weight:700; cursor:pointer;">+</button>
+    </div>
+    <div id="plannerList"></div>
+  </div>
+
+  <!-- CALENDAR MODULE -->
+  <div class="module-view" id="view-calendar">
+    <div class="module-header" style="margin-bottom:14px;">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;">Calendar</div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+      <button onclick="shiftCalendarMonth(-1)" style="background:#181D23; border:1px solid #23282E; color:#E8E4DA; width:36px; height:36px; border-radius:9px; cursor:pointer;">‹</button>
+      <div class="display" id="calendarMonthLabel" style="font-size:16px; font-weight:600;">Month Year</div>
+      <button onclick="shiftCalendarMonth(1)" style="background:#181D23; border:1px solid #23282E; color:#E8E4DA; width:36px; height:36px; border-radius:9px; cursor:pointer;">›</button>
+    </div>
+    <div id="calendarGrid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:18px;"></div>
+    <div id="calendarDayPanel"></div>
+  </div>
+  <!-- ^ closes view-calendar -->
+
+  <!-- SHOPPING LIST MODULE -->
+  <div class="module-view" id="view-shopping">
+    <div class="module-header" style="margin-bottom:14px;">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;">Shopping List</div>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <input type="text" id="shoppingInput" placeholder="Add an item..." style="flex:1; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:11px 12px; font-size:14px;">
+      <button onclick="addShoppingItem()" style="background:#C98A3F; color:#12161A; border:none; border-radius:9px; padding:0 16px; font-weight:700; cursor:pointer;">+</button>
+    </div>
+    <div id="shoppingActiveSection"></div>
+    <div id="shoppingBoughtSection" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- PROJECT ROADMAP MODULE -->
+  <div class="module-view" id="view-roadmap">
+    <div class="module-header" style="margin-bottom:14px;">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;">Project Roadmap</div>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <input type="text" id="roadmapInput" placeholder="Add a project..." style="flex:1; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:11px 12px; font-size:14px;">
+      <select id="roadmapStatusInput" style="background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:0 8px; font-size:12px;">
+        <option>Idea</option>
+        <option>Planning</option>
+        <option selected>In Progress</option>
+        <option>Done</option>
+      </select>
+      <button onclick="addRoadmapItem()" style="background:#C98A3F; color:#12161A; border:none; border-radius:9px; padding:0 16px; font-weight:700; cursor:pointer;">+</button>
+    </div>
+    <div id="roadmapList"></div>
+  </div>
+
+</div>
+
+<div class="bottom-nav mono">
+  <div class="nav-item active" id="navHome" onclick="goHome()">
+    <span class="nav-icon">🏠</span><span>Home</span>
+  </div>
+  <div class="nav-item" onclick="openModule('journal')">
+    <span class="nav-icon">🎣</span><span>Journal</span>
+  </div>
+  <div class="nav-item" onclick="openModule('tasks')">
+    <span class="nav-icon">✅</span><span>Tasks</span>
+  </div>
+  <div class="nav-item" onclick="openModule('calendar')">
+    <span class="nav-icon">📅</span><span>Calendar</span>
+  </div>
+  <div class="nav-item" onclick="openModule('notes')">
+    <span class="nav-icon">📝</span><span>Notes</span>
+  </div>
+</div>
+
+<script>
+
+  const STORAGE_KEY = 'fishing_journal_sessions';
+  const LEGACY_KEY = 'fishing_log_entries';
+  const KIT_KEY = 'fishing_kit_items';
+  const CHECKLIST_KEY = 'fishing_checklist_items';
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function loadSessions() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+
+    try {
+      const legacyRaw = localStorage.getItem(LEGACY_KEY);
+      if (legacyRaw) {
+        const legacyEntries = JSON.parse(legacyRaw);
+        const groups = {};
+        legacyEntries.forEach(e => {
+          const key = e.date + '|' + e.location;
+          if (!groups[key]) {
+            groups[key] = {
+              id: uid(), date: e.date, location: e.location, peg: '',
+              weather: e.weather || '', notes: '', catches: []
+            };
+          }
+          groups[key].catches.push({
+            id: uid(), species: e.species, weight: e.weight, length: e.length,
+            bait: e.bait, time: '', notes: e.notes || ''
+          });
+        });
+        const migrated = Object.values(groups);
+        if (migrated.length > 0) {
+          saveSessions(migrated);
+          return migrated;
+        }
+      }
+    } catch (e) { console.error('Migration failed', e); }
+
+    return [];
+  }
+
+  function saveSessions(sessionsToSave) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionsToSave));
+      return true;
+    } catch (e) {
+      console.error('Could not save', e);
+      return false;
+    }
+  }
+
+  let sessions = loadSessions();
+  let currentView = 'recent';
+  let searchQuery = '';
+  let activeSessionId = null;
+  let editingSessionId = null;
+  let editingCatchId = null;
+  let pendingSessionPhotos = [];
+  let pendingCatchPhotos = [];
+  let currentRating = 0;
+  let pendingCoords = null;
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function getFilteredSessions() {
+    let list = [...sessions];
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter(s =>
+        (s.location || '').toLowerCase().includes(q) ||
+        (s.peg || '').toLowerCase().includes(q) ||
+        (s.catches || []).some(c => (c.species || '').toLowerCase().includes(q))
+      );
+    }
+    return list.sort((a, b) => (a.date < b.date ? 1 : -1));
+  }
+
+  function setView(view) {
+    currentView = view;
+    document.getElementById('tabRecent').classList.toggle('active', view === 'recent');
+    document.getElementById('tabByLocation').classList.toggle('active', view === 'byLocation');
+    render();
+  }
+
+  function onSearch() {
+    searchQuery = document.getElementById('searchInput').value;
+    render();
+  }
+
+  function setMainSection(section) {
+    ['journal', 'gallery', 'kit', 'checklist'].forEach(s => {
+      document.getElementById('nav' + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle('active', s === section);
+      document.getElementById(s + 'Section').classList.toggle('active', s === section);
+    });
+    if (section === 'kit') renderKit();
+    if (section === 'checklist') renderChecklist();
+    if (section === 'gallery') renderGallery();
+  }
+
+  function starString(rating) {
+    if (!rating) return '';
+    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  }
+
+  function sessionSpeciesChips(session) {
+    const species = [...new Set((session.catches || []).map(c => c.species).filter(Boolean))];
+    return species.map(s => `<span class="chip">${escapeHtml(s)}</span>`).join('');
+  }
+
+  function renderSessionCard(s) {
+    const catchCount = (s.catches || []).length;
+    return `
+      <div class="session-card" onclick="openDetail('${s.id}')">
+        <div class="session-top">
+          <span class="session-location serif">${escapeHtml(s.location)}</span>
+          <span class="session-date">${formatDate(s.date)}</span>
+        </div>
+        <div class="session-sub">
+          ${s.peg ? escapeHtml(s.peg) + ' · ' : ''}${s.weather ? escapeHtml(s.weather) : ''}
+          <span class="catch-count">· ${catchCount} catch${catchCount === 1 ? '' : 'es'}</span>
+          ${s.rating ? ` · <span class="stars">${starString(s.rating)}</span>` : ''}
+        </div>
+        <div class="species-chips">${sessionSpeciesChips(s)}</div>
+        ${(s.photos && s.photos.length) ? `<div class="card-photo-strip">${s.photos.slice(0,4).map(p => `<img src="${p.dataUrl}">`).join('')}</div>` : ''}
+      </div>
+    `;
+  }
+
+  function render() {
+    const total = sessions.length;
+    document.getElementById('subtitle').textContent = total + (total === 1 ? ' session logged' : ' sessions logged');
+
+    const statsBox = document.getElementById('statsBox');
+    if (total > 0) {
+      statsBox.style.display = 'grid';
+      const totalCatches = sessions.reduce((sum, s) => sum + (s.catches || []).length, 0);
+      const locations = new Set(sessions.map(s => s.location).filter(Boolean));
+      document.getElementById('statSessions').textContent = total;
+      document.getElementById('statCatches').textContent = totalCatches;
+      document.getElementById('statLocations').textContent = locations.size;
+    } else {
+      statsBox.style.display = 'none';
+    }
+
+    const filtered = getFilteredSessions();
+    const listEl = document.getElementById('sessionList');
+    const emptyEl = document.getElementById('emptyState');
+
+    if (filtered.length === 0) {
+      emptyEl.style.display = 'block';
+      emptyEl.querySelector('.title').textContent = sessions.length === 0 ? 'No sessions yet' : 'No matching sessions';
+      listEl.innerHTML = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    if (currentView === 'recent') {
+      listEl.innerHTML = filtered.map(renderSessionCard).join('');
+    } else {
+      const byLocation = {};
+      filtered.forEach(s => {
+        const loc = s.location || 'Unknown';
+        if (!byLocation[loc]) byLocation[loc] = [];
+        byLocation[loc].push(s);
+      });
+      const locNames = Object.keys(byLocation).sort();
+      listEl.innerHTML = locNames.map(loc => `
+        <div class="location-group">
+          <div class="location-group-header">
+            <span class="name serif">${escapeHtml(loc)}</span>
+            <span class="count">${byLocation[loc].length} session${byLocation[loc].length === 1 ? '' : 's'}</span>
+          </div>
+          ${byLocation[loc].map(renderSessionCard).join('')}
+        </div>
+      `).join('');
+    }
+  }
+
+  // ---- Rating picker ----
+  function renderRatingPicker() {
+    const el = document.getElementById('ratingPicker');
+    el.innerHTML = [1,2,3,4,5].map(n => `
+      <span class="rating-star ${n <= currentRating ? 'filled' : ''}" onclick="setRating(${n})">★</span>
+    `).join('');
+  }
+  function setRating(n) {
+    currentRating = (currentRating === n) ? 0 : n; // click same star again to clear
+    renderRatingPicker();
+  }
+
+  // ---- GPS ----
+  function captureGPS() {
+    const statusEl = document.getElementById('gpsStatus');
+    if (!navigator.geolocation) {
+      statusEl.textContent = 'Geolocation not supported on this device.';
+      return;
+    }
+    statusEl.textContent = 'Getting location...';
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        pendingCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        document.getElementById('sCoords').value = pendingCoords.lat.toFixed(5) + ', ' + pendingCoords.lng.toFixed(5);
+        statusEl.innerHTML = `<a href="https://www.google.com/maps?q=${pendingCoords.lat},${pendingCoords.lng}" target="_blank">Open in Maps</a>`;
+      },
+      err => {
+        statusEl.textContent = 'Could not get location — check location permissions.';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  // ---- Photo handling ----
+  function compressImage(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+          else if (h > maxDim) { w = Math.round(w * (maxDim / h)); h = maxDim; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePhotoSelect(event, type) {
+    const files = Array.from(event.target.files || []);
+    for (const file of files) {
+      try {
+        const dataUrl = await compressImage(file, 900, 0.72);
+        const photo = { id: uid(), dataUrl: dataUrl };
+        if (type === 'session') pendingSessionPhotos.push(photo);
+        else pendingCatchPhotos.push(photo);
+      } catch (e) {
+        console.error('Could not process photo', e);
+      }
+    }
+    renderPhotoStrip(type);
+    event.target.value = '';
+  }
+
+  function renderPhotoStrip(type) {
+    const list = type === 'session' ? pendingSessionPhotos : pendingCatchPhotos;
+    const stripEl = document.getElementById(type === 'session' ? 'sPhotoStrip' : 'cPhotoStrip');
+    stripEl.innerHTML = list.map((p, i) => `
+      <div class="photo-thumb">
+        <img src="${p.dataUrl}">
+        <button class="rm" onclick="removePendingPhoto('${type}', ${i})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function removePendingPhoto(type, index) {
+    if (type === 'session') pendingSessionPhotos.splice(index, 1);
+    else pendingCatchPhotos.splice(index, 1);
+    renderPhotoStrip(type);
+  }
+
+  // ---- Location history hint ----
+  function onLocationInput() {
+    const query = document.getElementById('sLocation').value.trim().toLowerCase();
+    const hintEl = document.getElementById('locationHint');
+    if (!query) { hintEl.classList.remove('show'); return; }
+
+    const matches = sessions
+      .filter(s => (s.location || '').trim().toLowerCase() === query && s.id !== editingSessionId)
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+    if (matches.length === 0) { hintEl.classList.remove('show'); return; }
+
+    const last = matches[0];
+    const species = [...new Set((last.catches || []).map(c => c.species).filter(Boolean))];
+    hintEl.innerHTML = `
+      <div class="hint-title">📍 You've fished here before — last time: ${formatDate(last.date)}</div>
+      ${last.peg ? `Spot: ${escapeHtml(last.peg)}. ` : ''}${last.weather ? `Weather: ${escapeHtml(last.weather)}.` : ''}
+      ${last.planNextTrip ? `<div style="margin-top:5px;"><strong>Plan from last time:</strong> "${escapeHtml(last.planNextTrip)}"</div>` : ''}
+      ${last.notes ? `<div style="margin-top:5px;">"${escapeHtml(last.notes)}"</div>` : ''}
+      ${species.length ? `<div class="hint-chips">${species.map(sp => `<span class="chip">${escapeHtml(sp)}</span>`).join('')}</div>` : ''}
+      <div style="margin-top:5px; color:#7FA39A;">${matches.length} session${matches.length === 1 ? '' : 's'} logged here total</div>
+    `;
+    hintEl.classList.add('show');
+  }
+
+  // ---- New/Edit Session ----
+  function openSessionForm() {
+    editingSessionId = null;
+    document.getElementById('sessionModalTitle').textContent = 'New session';
+    document.getElementById('sessionSaveBtn').textContent = 'Start session';
+    document.getElementById('sDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('sLocation').value = '';
+    document.getElementById('sPeg').value = '';
+    document.getElementById('sWeather').value = 'Sunny';
+    document.getElementById('sNotes').value = '';
+    document.getElementById('sRod').value = '';
+    document.getElementById('sReel').value = '';
+    document.getElementById('sDistance').value = '';
+    document.getElementById('sHook').value = '';
+    document.getElementById('sFeeder').value = '';
+    document.getElementById('sHookbait').value = '';
+    document.getElementById('sFishActivity').value = '';
+    document.getElementById('sBubbles').value = '';
+    document.getElementById('sBirds').value = '';
+    document.getElementById('sWeed').value = '';
+    document.getElementById('sWhatWorked').value = '';
+    document.getElementById('sWhatDidnt').value = '';
+    document.getElementById('sPlanNextTrip').value = '';
+    document.getElementById('sCoords').value = '';
+    document.getElementById('gpsStatus').innerHTML = '';
+    document.getElementById('sessionErrorBox').innerHTML = '';
+    document.getElementById('locationHint').classList.remove('show');
+    pendingCoords = null;
+    currentRating = 0;
+    renderRatingPicker();
+    pendingSessionPhotos = [];
+    renderPhotoStrip('session');
+    document.getElementById('sessionModalOverlay').classList.add('open');
+  }
+
+  function editSessionFromDetail() {
+    const s = sessions.find(x => x.id === activeSessionId);
+    if (!s) return;
+    editingSessionId = s.id;
+    document.getElementById('sessionModalTitle').textContent = 'Edit session';
+    document.getElementById('sessionSaveBtn').textContent = 'Save changes';
+    document.getElementById('sDate').value = s.date || '';
+    document.getElementById('sLocation').value = s.location || '';
+    document.getElementById('sPeg').value = s.peg || '';
+    document.getElementById('sWeather').value = s.weather || 'Sunny';
+    document.getElementById('sNotes').value = s.notes || '';
+    document.getElementById('sRod').value = s.rod || '';
+    document.getElementById('sReel').value = s.reel || '';
+    document.getElementById('sDistance').value = s.distance || '';
+    document.getElementById('sHook').value = s.hook || '';
+    document.getElementById('sFeeder').value = s.feeder || '';
+    document.getElementById('sHookbait').value = s.hookbait || '';
+    document.getElementById('sFishActivity').value = s.fishActivity || '';
+    document.getElementById('sBubbles').value = s.bubbles || '';
+    document.getElementById('sBirds').value = s.birds || '';
+    document.getElementById('sWeed').value = s.weed || '';
+    document.getElementById('sWhatWorked').value = s.whatWorked || '';
+    document.getElementById('sWhatDidnt').value = s.whatDidnt || '';
+    document.getElementById('sPlanNextTrip').value = s.planNextTrip || '';
+    document.getElementById('sessionErrorBox').innerHTML = '';
+    document.getElementById('locationHint').classList.remove('show');
+
+    if (s.lat != null && s.lng != null) {
+      pendingCoords = { lat: s.lat, lng: s.lng };
+      document.getElementById('sCoords').value = s.lat.toFixed(5) + ', ' + s.lng.toFixed(5);
+      document.getElementById('gpsStatus').innerHTML = `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank">Open in Maps</a>`;
+    } else {
+      pendingCoords = null;
+      document.getElementById('sCoords').value = '';
+      document.getElementById('gpsStatus').innerHTML = '';
+    }
+
+    currentRating = s.rating || 0;
+    renderRatingPicker();
+    pendingSessionPhotos = (s.photos || []).slice();
+    renderPhotoStrip('session');
+
+    closeDetail(false);
+    document.getElementById('sessionModalOverlay').classList.add('open');
+  }
+
+  function closeSessionForm() {
+    document.getElementById('sessionModalOverlay').classList.remove('open');
+  }
+
+  function saveSession() {
+    const location = document.getElementById('sLocation').value.trim();
+    if (!location) {
+      document.getElementById('sessionErrorBox').innerHTML =
+        '<div class="error-box">Location is needed to start a session.</div>';
+      return;
+    }
+
+    const fields = {
+      date: document.getElementById('sDate').value,
+      location: location,
+      peg: document.getElementById('sPeg').value.trim(),
+      weather: document.getElementById('sWeather').value,
+      notes: document.getElementById('sNotes').value.trim(),
+      rod: document.getElementById('sRod').value.trim(),
+      reel: document.getElementById('sReel').value.trim(),
+      distance: document.getElementById('sDistance').value.trim(),
+      hook: document.getElementById('sHook').value.trim(),
+      feeder: document.getElementById('sFeeder').value.trim(),
+      hookbait: document.getElementById('sHookbait').value.trim(),
+      fishActivity: document.getElementById('sFishActivity').value.trim(),
+      bubbles: document.getElementById('sBubbles').value.trim(),
+      birds: document.getElementById('sBirds').value.trim(),
+      weed: document.getElementById('sWeed').value.trim(),
+      whatWorked: document.getElementById('sWhatWorked').value.trim(),
+      whatDidnt: document.getElementById('sWhatDidnt').value.trim(),
+      planNextTrip: document.getElementById('sPlanNextTrip').value.trim(),
+      rating: currentRating,
+      lat: pendingCoords ? pendingCoords.lat : null,
+      lng: pendingCoords ? pendingCoords.lng : null,
+      photos: pendingSessionPhotos.slice()
+    };
+
+    if (editingSessionId) {
+      const s = sessions.find(x => x.id === editingSessionId);
+      if (s) Object.assign(s, fields);
+    } else {
+      sessions.unshift({ id: uid(), catches: [], ...fields });
+    }
+
+    saveSessions(sessions);
+    const savedId = editingSessionId || sessions[0].id;
+    closeSessionForm();
+    render();
+    openDetail(savedId);
+  }
+
+  // ---- Session Detail ----
+  function openDetail(id) {
+    activeSessionId = id;
+    const s = sessions.find(x => x.id === id);
+    if (!s) return;
+
+    document.getElementById('detailLocation').textContent = s.location;
+    document.getElementById('detailMeta').innerHTML = `
+      <div>📅 ${formatDate(s.date)}</div>
+      ${s.peg ? `<div>📍 ${escapeHtml(s.peg)}</div>` : ''}
+      ${s.weather ? `<div>☁ ${escapeHtml(s.weather)}</div>` : ''}
+      ${(s.lat != null) ? `<div><a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" style="color:#8FBFA0;">🗺 Map</a></div>` : ''}
+    `;
+
+    document.getElementById('detailRating').innerHTML = s.rating
+      ? `<div class="detail-section"><span class="stars" style="font-size:16px;">${starString(s.rating)}</span></div>` : '';
+
+    const tackleFields = [
+      ['Rod', s.rod], ['Reel', s.reel], ['Distance', s.distance],
+      ['Hook', s.hook], ['Feeder', s.feeder], ['Hookbait', s.hookbait]
+    ].filter(([_, v]) => v);
+    document.getElementById('detailTackle').innerHTML = tackleFields.length ? `
+      <div class="detail-section">
+        <div class="detail-section-title">Tackle setup</div>
+        <div class="detail-kv">${tackleFields.map(([k, v]) => `<div><strong>${k}:</strong> ${escapeHtml(v)}</div>`).join('')}</div>
+      </div>
+    ` : '';
+
+    const obsFields = [
+      ['Fish activity', s.fishActivity], ['Bubbles', s.bubbles], ['Birds', s.birds], ['Weed', s.weed]
+    ].filter(([_, v]) => v);
+    document.getElementById('detailObservations').innerHTML = obsFields.length ? `
+      <div class="detail-section">
+        <div class="detail-section-title">Observations</div>
+        <div class="detail-kv">${obsFields.map(([k, v]) => `<div><strong>${k}:</strong> ${escapeHtml(v)}</div>`).join('')}</div>
+      </div>
+    ` : '';
+
+    document.getElementById('detailNotesWrap').innerHTML = s.notes
+      ? `<div class="session-notes">📝 ${escapeHtml(s.notes)}</div>` : '';
+
+    const wrapupFields = [
+      ['What worked', s.whatWorked], ["What didn't", s.whatDidnt], ['Plan for next trip', s.planNextTrip]
+    ].filter(([_, v]) => v);
+    document.getElementById('detailWrapup').innerHTML = wrapupFields.length ? `
+      <div class="detail-section">
+        <div class="detail-section-title">Wrap-up</div>
+        ${wrapupFields.map(([k, v]) => `<div style="margin-bottom:6px; font-size:13px;"><strong>${k}:</strong> ${escapeHtml(v)}</div>`).join('')}
+      </div>
+    ` : '';
+
+    document.getElementById('detailPhotos').innerHTML = (s.photos && s.photos.length)
+      ? `<div class="detail-photo-strip">${s.photos.map(p => `<img src="${p.dataUrl}">`).join('')}</div>` : '';
+
+    renderCatchList(s);
+    document.getElementById('detailModalOverlay').classList.add('open');
+  }
+
+  function renderCatchList(s) {
+    const catchListEl = document.getElementById('catchList');
+    if (!s.catches || s.catches.length === 0) {
+      catchListEl.innerHTML = '<div style="text-align:center; color:#7FA39A; font-size:13px; padding:12px 0;">No catches logged yet for this session.</div>';
+      return;
+    }
+    catchListEl.innerHTML = s.catches.map(c => `
+      <div class="catch-item">
+        <div class="catch-actions">
+          <button class="edit-icon" onclick="editCatch('${c.id}')">✎</button>
+          <button class="del" onclick="deleteCatch('${c.id}')">🗑</button>
+        </div>
+        <div class="species serif">${escapeHtml(c.species)}</div>
+        <div class="meta-row">
+          ${c.weight ? `<span>⚖ ${escapeHtml(c.weight)}</span>` : ''}
+          ${c.length ? `<span>📏 ${escapeHtml(c.length)}</span>` : ''}
+          ${c.bait ? `<span>🐟 ${escapeHtml(c.bait)}</span>` : ''}
+          ${c.time ? `<span>🕐 ${escapeHtml(c.time)}</span>` : ''}
+        </div>
+        ${c.notes ? `<div style="margin-top:6px; font-size:12.5px; color:#C7D8D3;">${escapeHtml(c.notes)}</div>` : ''}
+        ${(c.photos && c.photos.length) ? `<div class="catch-photo-strip">${c.photos.map(p => `<img src="${p.dataUrl}">`).join('')}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function closeDetail(rerender) {
+    document.getElementById('detailModalOverlay').classList.remove('open');
+    if (rerender !== false) {
+      activeSessionId = null;
+      render();
+    }
+  }
+
+  function deleteSession() {
+    sessions = sessions.filter(s => s.id !== activeSessionId);
+    saveSessions(sessions);
+    closeDetail();
+  }
+
+  // ---- New/Edit Catch ----
+  function openCatchForm() {
+    editingCatchId = null;
+    document.getElementById('catchModalTitle').textContent = 'Log a catch';
+    document.getElementById('catchSaveBtn').textContent = 'Save catch';
+    document.getElementById('cSpecies').value = '';
+    document.getElementById('cWeight').value = '';
+    document.getElementById('cLength').value = '';
+    document.getElementById('cBait').value = '';
+    document.getElementById('cTime').value = '';
+    document.getElementById('cNotes').value = '';
+    document.getElementById('catchErrorBox').innerHTML = '';
+    pendingCatchPhotos = [];
+    renderPhotoStrip('catch');
+    document.getElementById('catchModalOverlay').classList.add('open');
+  }
+
+  function editCatch(catchId) {
+    const s = sessions.find(x => x.id === activeSessionId);
+    if (!s) return;
+    const c = (s.catches || []).find(x => x.id === catchId);
+    if (!c) return;
+    editingCatchId = catchId;
+    document.getElementById('catchModalTitle').textContent = 'Edit catch';
+    document.getElementById('catchSaveBtn').textContent = 'Save changes';
+    document.getElementById('cSpecies').value = c.species || '';
+    document.getElementById('cWeight').value = c.weight || '';
+    document.getElementById('cLength').value = c.length || '';
+    document.getElementById('cBait').value = c.bait || '';
+    document.getElementById('cTime').value = c.time || '';
+    document.getElementById('cNotes').value = c.notes || '';
+    document.getElementById('catchErrorBox').innerHTML = '';
+    pendingCatchPhotos = (c.photos || []).slice();
+    renderPhotoStrip('catch');
+    document.getElementById('catchModalOverlay').classList.add('open');
+  }
+
+  function closeCatchForm() {
+    document.getElementById('catchModalOverlay').classList.remove('open');
+  }
+
+  function saveCatch() {
+    const species = document.getElementById('cSpecies').value.trim();
+    if (!species) {
+      document.getElementById('catchErrorBox').innerHTML =
+        '<div class="error-box">Species is needed to log a catch.</div>';
+      return;
+    }
+    const s = sessions.find(x => x.id === activeSessionId);
+    if (!s) return;
+    if (!s.catches) s.catches = [];
+
+    const fields = {
+      species: species,
+      weight: document.getElementById('cWeight').value.trim(),
+      length: document.getElementById('cLength').value.trim(),
+      bait: document.getElementById('cBait').value.trim(),
+      time: document.getElementById('cTime').value,
+      notes: document.getElementById('cNotes').value.trim(),
+      photos: pendingCatchPhotos.slice()
+    };
+
+    if (editingCatchId) {
+      const c = s.catches.find(x => x.id === editingCatchId);
+      if (c) Object.assign(c, fields);
+    } else {
+      s.catches.push({ id: uid(), ...fields });
+    }
+
+    saveSessions(sessions);
+    closeCatchForm();
+    renderCatchList(s);
+  }
+
+  function deleteCatch(catchId) {
+    const s = sessions.find(x => x.id === activeSessionId);
+    if (!s) return;
+    s.catches = s.catches.filter(c => c.id !== catchId);
+    saveSessions(sessions);
+    renderCatchList(s);
+  }
+
+  // ---- Gallery ----
+  function renderGallery() {
+    const allPhotos = [];
+    sessions.forEach(s => {
+      (s.photos || []).forEach(p => allPhotos.push({ ...p, sessionId: s.id }));
+      (s.catches || []).forEach(c => (c.photos || []).forEach(p => allPhotos.push({ ...p, sessionId: s.id })));
+    });
+    const gridEl = document.getElementById('galleryGrid');
+    const emptyEl = document.getElementById('galleryEmpty');
+    if (allPhotos.length === 0) {
+      gridEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    gridEl.innerHTML = allPhotos.map(p => `<img src="${p.dataUrl}" onclick="setMainSection('journal'); openDetail('${p.sessionId}')">`).join('');
+  }
+
+  // ---- Backup / Restore ----
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function exportEntries() {
+    if (sessions.length === 0) {
+      showToast('No sessions to export yet');
+      return;
+    }
+    const dataStr = JSON.stringify(sessions, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `fishing-journal-backup-${dateStamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup saved to your files');
+  }
+
+  function importEntries(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (!Array.isArray(imported)) throw new Error('Invalid format');
+        const existingIds = new Set(sessions.map(s => s.id));
+        let addedCount = 0;
+        imported.forEach(s => {
+          if (s && s.id && !existingIds.has(s.id)) {
+            sessions.push(s);
+            existingIds.add(s.id);
+            addedCount++;
+          }
+        });
+        saveSessions(sessions);
+        render();
+        showToast(addedCount > 0 ? `Imported ${addedCount} session${addedCount === 1 ? '' : 's'}` : 'Nothing new to import');
+      } catch (err) {
+        showToast('Could not read that backup file');
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  // ---- Kit ----
+  const DEFAULT_CHECKLIST = [
+    ['Rods & Reels', 'Feeder rod'], ['Rods & Reels', 'Spare rod'], ['Rods & Reels', 'Reel'], ['Rods & Reels', 'Spare spool'],
+    ['Terminal Tackle', '30g feeders'], ['Terminal Tackle', 'Hooks (10,12,14)'], ['Terminal Tackle', 'Hooklengths'],
+    ['Terminal Tackle', 'Swivels'], ['Terminal Tackle', 'Beads'], ['Terminal Tackle', 'Split shot'],
+    ['Terminal Tackle', 'Scissors'], ['Terminal Tackle', 'Disgorger'], ['Terminal Tackle', 'Baiting needle'],
+    ['Bait & Groundbait', 'Groundbait'], ['Bait & Groundbait', 'Sweetcorn'], ['Bait & Groundbait', 'Worms'],
+    ['Bait & Groundbait', 'Maggots'], ['Bait & Groundbait', 'Casters'], ['Bait & Groundbait', 'Hemp'],
+    ['Bait & Groundbait', 'Mixing bowl'], ['Bait & Groundbait', 'Water for mixing'],
+    ['Fish Care', 'Landing net'], ['Fish Care', 'Keepnet'], ['Fish Care', 'Unhooking mat'],
+    ['Fish Care', 'Forceps'], ['Fish Care', 'Weigh sling'], ['Fish Care', 'Scales'],
+    ['Comfort', 'Chair'], ['Comfort', 'Hat'], ['Comfort', 'Waterproofs'], ['Comfort', 'Sunscreen'],
+    ['Comfort', 'Polarised sunglasses'], ['Comfort', 'Food'], ['Comfort', 'Drinks'],
+    ['Essentials', 'Fishing licence'], ['Essentials', 'Phone'], ['Essentials', 'Power bank'],
+    ['Essentials', 'Head torch'], ['Essentials', 'First aid kit'], ['Essentials', 'Bin bag']
+  ];
+
+  function loadKit() {
+    try {
+      const raw = localStorage.getItem(KIT_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    return [];
+  }
+  function saveKit(kit) {
+    try { localStorage.setItem(KIT_KEY, JSON.stringify(kit)); } catch (e) { console.error(e); }
+  }
+
+  function loadChecklist() {
+    try {
+      const raw = localStorage.getItem(CHECKLIST_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    const seeded = DEFAULT_CHECKLIST.map(([category, label]) => ({ id: uid(), category, label, checked: false }));
+    saveChecklist(seeded);
+    return seeded;
+  }
+  function saveChecklist(list) {
+    try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(list)); } catch (e) { console.error(e); }
+  }
+
+  let kitItems = loadKit();
+  let checklistItems = loadChecklist();
+
+  function addKitItem() {
+    const nameInput = document.getElementById('kitNameInput');
+    const name = nameInput.value.trim();
+    if (!name) return;
+    kitItems.push({
+      id: uid(), name: name,
+      category: document.getElementById('kitCategoryInput').value,
+      owned: false
+    });
+    saveKit(kitItems);
+    nameInput.value = '';
+    renderKit();
+  }
+  function toggleKitOwned(id) {
+    const item = kitItems.find(k => k.id === id);
+    if (item) item.owned = !item.owned;
+    saveKit(kitItems);
+    renderKit();
+  }
+  function deleteKitItem(id) {
+    kitItems = kitItems.filter(k => k.id !== id);
+    saveKit(kitItems);
+    renderKit();
+  }
+  function renderKit() {
+    const listEl = document.getElementById('kitList');
+    if (kitItems.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center; color:#7FA39A; font-size:13px; padding:20px 0;">No gear added yet. Add what you own or still need above.</div>';
+      return;
+    }
+    const categories = [...new Set(kitItems.map(k => k.category))];
+    listEl.innerHTML = categories.map(cat => `
+      <div class="kit-category">
+        <div class="kit-category-title serif">${escapeHtml(cat)}</div>
+        ${kitItems.filter(k => k.category === cat).map(k => `
+          <div class="kit-item">
+            <span class="kit-name ${k.owned ? '' : 'need'}">${escapeHtml(k.name)}</span>
+            <button class="kit-toggle ${k.owned ? 'owned' : 'need-buy'}" onclick="toggleKitOwned('${k.id}')">${k.owned ? '✓ Owned' : 'Need to buy'}</button>
+            <button class="kit-del" onclick="deleteKitItem('${k.id}')">🗑</button>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+  }
+
+  // ---- Checklist ----
+  function addChecklistItem() {
+    const nameInput = document.getElementById('checklistNameInput');
+    const label = nameInput.value.trim();
+    if (!label) return;
+    checklistItems.push({ id: uid(), category: 'Other', label: label, checked: false });
+    saveChecklist(checklistItems);
+    nameInput.value = '';
+    renderChecklist();
+  }
+  function toggleChecklistItem(id) {
+    const item = checklistItems.find(c => c.id === id);
+    if (item) item.checked = !item.checked;
+    saveChecklist(checklistItems);
+    renderChecklist();
+  }
+  function deleteChecklistItem(id) {
+    checklistItems = checklistItems.filter(c => c.id !== id);
+    saveChecklist(checklistItems);
+    renderChecklist();
+  }
+  function resetChecklist() {
+    checklistItems.forEach(c => c.checked = false);
+    saveChecklist(checklistItems);
+    renderChecklist();
+    showToast('Checklist reset for your next trip');
+  }
+  function renderChecklist() {
+    const total = checklistItems.length;
+    const checked = checklistItems.filter(c => c.checked).length;
+    document.getElementById('checklistProgress').textContent = `${checked} of ${total} packed`;
+
+    const listEl = document.getElementById('checklistList');
+    if (total === 0) {
+      listEl.innerHTML = '<div style="text-align:center; color:#7FA39A; font-size:13px; padding:20px 0;">No checklist items yet.</div>';
+      return;
+    }
+    const categories = [...new Set(checklistItems.map(c => c.category))];
+    listEl.innerHTML = categories.map(cat => `
+      <div class="checklist-category">
+        <div class="checklist-category-title serif">${escapeHtml(cat)}</div>
+        ${checklistItems.filter(c => c.category === cat).map(c => `
+          <div class="checklist-item ${c.checked ? 'checked' : ''}" onclick="toggleChecklistItem('${c.id}')">
+            <div class="box">${c.checked ? '✓' : ''}</div>
+            <span class="label">${escapeHtml(c.label)}</span>
+            <button class="checklist-del" onclick="event.stopPropagation(); deleteChecklistItem('${c.id}')">🗑</button>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+  }
+
+  render();
+
+
+  // ---- Tasks module ----
+  const TASKS_KEY = 'personal_os_tasks';
+
+  function loadTasks() {
+    try {
+      const raw = localStorage.getItem(TASKS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    return [];
+  }
+  function saveTasks(list) {
+    try { localStorage.setItem(TASKS_KEY, JSON.stringify(list)); } catch (e) { console.error(e); }
+  }
+
+  let tasks = loadTasks();
+
+  function addTask() {
+    const input = document.getElementById('taskInput');
+    const title = input.value.trim();
+    if (!title) return;
+    tasks.unshift({
+      id: uid(),
+      title: title,
+      priority: document.getElementById('taskPriorityInput').value,
+      dueDate: document.getElementById('taskDueInput').value,
+      completed: false,
+      createdAt: new Date().toISOString()
+    });
+    saveTasks(tasks);
+    input.value = '';
+    document.getElementById('taskDueInput').value = '';
+    renderTasks();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(x => x.id === id);
+    if (t) t.completed = !t.completed;
+    saveTasks(tasks);
+    renderTasks();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(x => x.id !== id);
+    saveTasks(tasks);
+    renderTasks();
+  }
+
+  function priorityColor(p) {
+    if (p === 'High') return '#D99B85';
+    if (p === 'Medium') return '#C98A3F';
+    return '#6B7178';
+  }
+
+  function taskCardHtml(t) {
+    const overdue = t.dueDate && !t.completed && new Date(t.dueDate) < new Date(new Date().toDateString());
+    return `
+      <div style="background:#181D23; border:1px solid #23282E; border-radius:12px; padding:13px; margin-bottom:9px; display:flex; align-items:flex-start; gap:11px; ${t.completed ? 'opacity:0.5;' : ''}">
+        <div onclick="toggleTask('${t.id}')" style="width:21px; height:21px; border-radius:6px; border:1.5px solid #6B7178; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; margin-top:1px; ${t.completed ? 'background:#C98A3F; border-color:#C98A3F; color:#12161A;' : ''}">${t.completed ? '✓' : ''}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; ${t.completed ? 'text-decoration:line-through; color:#6B7178;' : 'color:#E8E4DA;'}">${escapeHtml(t.title)}</div>
+          <div style="display:flex; gap:10px; margin-top:5px; font-size:11px;">
+            <span style="color:${priorityColor(t.priority)};">● ${t.priority}</span>
+            ${t.dueDate ? `<span style="color:${overdue ? '#D99B85' : '#6B7178'};">${overdue ? '⚠ ' : ''}Due ${formatDate(t.dueDate)}</span>` : ''}
+          </div>
+        </div>
+        <button onclick="deleteTask('${t.id}')" style="background:none; border:none; color:#5A6068; font-size:14px; cursor:pointer;">🗑</button>
+      </div>
+    `;
+  }
+
+  function renderTasks() {
+    const active = tasks.filter(t => !t.completed);
+    const completed = tasks.filter(t => t.completed);
+
+    const activeEl = document.getElementById('taskActiveSection');
+    if (active.length === 0) {
+      activeEl.innerHTML = '<div style="text-align:center; color:#6B7178; font-size:13px; padding:30px 0; border:1px dashed #23282E; border-radius:12px;">No active tasks. Add one above.</div>';
+    } else {
+      activeEl.innerHTML = active.map(taskCardHtml).join('');
+    }
+
+    const completedEl = document.getElementById('taskCompletedSection');
+    if (completed.length === 0) {
+      completedEl.innerHTML = '';
+    } else {
+      completedEl.innerHTML = `<div style="font-size:11px; font-weight:700; color:#6B7178; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Completed (${completed.length})</div>` + completed.map(taskCardHtml).join('');
+    }
+  }
+
+  // ---- Daily Planner module ----
+  const PLANNER_KEY = 'personal_os_planner';
+  let plannerDate = new Date().toISOString().slice(0, 10);
+
+  function loadPlanner() {
+    try {
+      const raw = localStorage.getItem(PLANNER_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    return {};
+  }
+  function savePlanner(data) {
+    try { localStorage.setItem(PLANNER_KEY, JSON.stringify(data)); } catch (e) { console.error(e); }
+  }
+  let plannerData = loadPlanner();
+
+  function shiftPlannerDay(delta) {
+    const d = new Date(plannerDate + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    plannerDate = d.toISOString().slice(0, 10);
+    document.getElementById('plannerDateInput').value = plannerDate;
+    renderPlanner();
+  }
+  function onPlannerDateChange() {
+    plannerDate = document.getElementById('plannerDateInput').value;
+    renderPlanner();
+  }
+  function addPlannerItem() {
+    const activity = document.getElementById('plannerActivityInput').value.trim();
+    if (!activity) return;
+    if (!plannerData[plannerDate]) plannerData[plannerDate] = [];
+    plannerData[plannerDate].push({
+      id: uid(),
+      time: document.getElementById('plannerTimeInput').value,
+      activity: activity
+    });
+    plannerData[plannerDate].sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+    savePlanner(plannerData);
+    document.getElementById('plannerActivityInput').value = '';
+    renderPlanner();
+  }
+  function deletePlannerItem(id) {
+    if (!plannerData[plannerDate]) return;
+    plannerData[plannerDate] = plannerData[plannerDate].filter(i => i.id !== id);
+    savePlanner(plannerData);
+    renderPlanner();
+  }
+  function renderPlanner() {
+    document.getElementById('plannerDateInput').value = plannerDate;
+    const items = plannerData[plannerDate] || [];
+    const listEl = document.getElementById('plannerList');
+    if (items.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center; color:#6B7178; font-size:13px; padding:30px 0; border:1px dashed #23282E; border-radius:12px;">Nothing planned for this day yet.</div>';
+      return;
+    }
+    listEl.innerHTML = items.map(i => `
+      <div style="display:flex; align-items:center; gap:12px; background:#181D23; border:1px solid #23282E; border-radius:11px; padding:12px 13px; margin-bottom:8px;">
+        <div class="mono" style="color:#C98A3F; font-size:13px; width:52px; flex-shrink:0;">${i.time || '--:--'}</div>
+        <div style="flex:1; font-size:14px;">${escapeHtml(i.activity)}</div>
+        <button onclick="deletePlannerItem('${i.id}')" style="background:none; border:none; color:#5A6068; font-size:14px; cursor:pointer;">🗑</button>
+      </div>
+    `).join('');
+  }
+
+  // ---- Calendar module ----
+  const CALENDAR_KEY = 'personal_os_calendar';
+  let calendarViewDate = new Date();
+  let calendarSelectedDate = null;
+
+  function loadCalendarEvents() {
+    try {
+      const raw = localStorage.getItem(CALENDAR_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    return {};
+  }
+  function saveCalendarEvents(data) {
+    try { localStorage.setItem(CALENDAR_KEY, JSON.stringify(data)); } catch (e) { console.error(e); }
+  }
+  let calendarEvents = loadCalendarEvents();
+
+  function shiftCalendarMonth(delta) {
+    calendarViewDate.setMonth(calendarViewDate.getMonth() + delta);
+    renderCalendar();
+  }
+
+  function dateKey(y, m, d) {
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+
+  function renderCalendar() {
+    const y = calendarViewDate.getFullYear();
+    const m = calendarViewDate.getMonth();
+    document.getElementById('calendarMonthLabel').textContent =
+      calendarViewDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const todayKey = new Date().toISOString().slice(0, 10);
+
+    let cells = ['S','M','T','W','T','F','S'].map(d =>
+      `<div class="mono" style="text-align:center; font-size:10px; color:#6B7178; padding:4px 0;">${d}</div>`
+    );
+    for (let i = 0; i < firstDay; i++) cells.push('<div></div>');
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = dateKey(y, m, d);
+      const hasEvents = calendarEvents[key] && calendarEvents[key].length > 0;
+      const isToday = key === todayKey;
+      const isSelected = key === calendarSelectedDate;
+      cells.push(`
+        <div onclick="selectCalendarDay('${key}')" style="
+          text-align:center; padding:8px 0; border-radius:8px; cursor:pointer; font-size:13px; position:relative;
+          background:${isSelected ? '#C98A3F' : (isToday ? '#23282E' : 'transparent')};
+          color:${isSelected ? '#12161A' : '#E8E4DA'};
+          border:${isToday && !isSelected ? '1px solid #C98A3F' : '1px solid transparent'};
+        ">
+          ${d}
+          ${hasEvents ? `<div style="width:4px; height:4px; border-radius:50%; background:${isSelected ? '#12161A' : '#C98A3F'}; margin:2px auto 0;"></div>` : ''}
+        </div>
+      `);
+    }
+    document.getElementById('calendarGrid').innerHTML = cells.join('');
+    renderCalendarDayPanel();
+  }
+
+  function selectCalendarDay(key) {
+    calendarSelectedDate = key;
+    renderCalendar();
+  }
+
+  function renderCalendarDayPanel() {
+    const panel = document.getElementById('calendarDayPanel');
+    if (!calendarSelectedDate) {
+      panel.innerHTML = '<div style="text-align:center; color:#6B7178; font-size:12.5px; padding:10px 0;">Tap a day to see or add events.</div>';
+      return;
+    }
+    const events = calendarEvents[calendarSelectedDate] || [];
+    panel.innerHTML = `
+      <div class="display" style="font-size:14px; font-weight:600; margin-bottom:10px;">${formatDate(calendarSelectedDate)}</div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <input type="text" id="calendarEventInput" placeholder="Add event..." style="flex:1; background:#181D23; color:#E8E4DA; border:1px solid #23282E; border-radius:9px; padding:10px 12px; font-size:13.5px;">
+        <button onclick="addCalendarEvent()" style="background:#C98A3F; color:#12161A; border:none; border-radius:9px; padding:0 16px; font-weight:700; cursor:pointer;">+</button>
+      </div>
+      ${events.length === 0 ? '<div style="text-align:center; color:#6B7178; font-size:12.5px; padding:12px 0;">No events this day.</div>' :
+        events.map(e => `
+          <div style="display:flex; align-items:center; gap:10px; background:#181D23; border:1px solid #23282E; border-radius:10px; padding:10px 12px; margin-bottom:7px;">
+            <div style="flex:1; font-size:13.5px;">${escapeHtml(e.title)}</div>
+            <button onclick="deleteCalendarEvent('${e.id}')" style="background:none; border:none; color:#5A6068; font-size:13px; cursor:pointer;">🗑</button>
+          </div>
+        `).join('')}
+    `;
+  }
+
+  function addCalendarEvent() {
+    const input = document.getElementById('calendarEventInput');
+    const title = input.value.trim();
+    if (!title || !calendarSelectedDate) return;
+    if (!calendarEvents[calendarSelectedDate]) calendarEvents[calendarSelectedDate] = [];
+    calendarEvents[calendarSelectedDate].push({ id: uid(), title: title });
+    saveCalendarEvents(calendarEvents);
+    renderCalendar();
+  }
+
+  function deleteCalendarEvent(id) {
+    if (!calendarSelectedDate) return;
+    calendarEvents[calendarSelectedDate] = (calendarEvents[calendarSelectedDate] || []).filter(e => e.id !== id);
+    saveCalendarEvents(calendarEvents);
+    renderCalendar();
+  }
+
+  // ---- Shopping List module ----
+  const SHOPPING_KEY = 'personal_os_shopping';
+
+  function loadShopping() {
+    try {
+      const raw = localStorage.getItem(SHOPPING_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    return [];
+  }
+  function saveShopping(list) {
+    try { localStorage.setItem(SHOPPING_KEY, JSON.stringify(list)); } catch (e) { console.error(e); }
+  }
+  let shoppingItems = loadShopping();
+
+  function addShoppingItem() {
+    const input = document.getElementById('shoppingInput');
+    const name = input.value.trim();
+    if (!name) return;
+    shoppingItems.unshift({ id: uid(), name: name, bought: false });
+    saveShopping(shoppingItems);
+    input.value = '';
+    renderShopping();
+  }
+  function toggleShoppingItem(id) {
+    const item = shoppingItems.find(i => i.id === id);
+    if (item) item.bought = !item.bought;
+    saveShopping(shoppingItems);
+    renderShopping();
+  }
+  function deleteShoppingItem(id) {
+    shoppingItems = shoppingItems.filter(i => i.id !== id);
+    saveShopping(shoppingItems);
+    renderShopping();
+  }
+  function shoppingCardHtml(i) {
+    return `
+      <div style="display:flex; align-items:center; gap:11px; background:#181D23; border:1px solid #23282E; border-radius:11px; padding:12px 13px; margin-bottom:8px; ${i.bought ? 'opacity:0.5;' : ''}">
+        <div onclick="toggleShoppingItem('${i.id}')" style="width:20px; height:20px; border-radius:6px; border:1.5px solid #6B7178; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; ${i.bought ? 'background:#C98A3F; border-color:#C98A3F; color:#12161A;' : ''}">${i.bought ? '✓' : ''}</div>
+        <div style="flex:1; font-size:14px; ${i.bought ? 'text-decoration:line-through; color:#6B7178;' : ''}">${escapeHtml(i.name)}</div>
+        <button onclick="deleteShoppingItem('${i.id}')" style="background:none; border:none; color:#5A6068; font-size:14px; cursor:pointer;">🗑</button>
+      </div>
+    `;
+  }
+  function renderShopping() {
+    const active = shoppingItems.filter(i => !i.bought);
+    const bought = shoppingItems.filter(i => i.bought);
+
+    const activeEl = document.getElementById('shoppingActiveSection');
+    activeEl.innerHTML = active.length === 0
+      ? '<div style="text-align:center; color:#6B7178; font-size:13px; padding:30px 0; border:1px dashed #23282E; border-radius:12px;">List is empty. Add something above.</div>'
+      : active.map(shoppingCardHtml).join('');
+
+    const boughtEl = document.getElementById('shoppingBoughtSection');
+    boughtEl.innerHTML = bought.length === 0 ? '' :
+      `<div style="font-size:11px; font-weight:700; color:#6B7178; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Bought (${bought.length})</div>` + bought.map(shoppingCardHtml).join('');
+  }
+
+  // ---- Project Roadmap module ----
+  const ROADMAP_KEY = 'personal_os_roadmap';
+
+  function loadRoadmap() {
+    try {
+      const raw = localStorage.getItem(ROADMAP_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.error(e); }
+    return [];
+  }
+  function saveRoadmap(list) {
+    try { localStorage.setItem(ROADMAP_KEY, JSON.stringify(list)); } catch (e) { console.error(e); }
+  }
+  let roadmapItems = loadRoadmap();
+
+  function roadmapStatusColor(s) {
+    if (s === 'Done') return '#4A9A6A';
+    if (s === 'In Progress') return '#C98A3F';
+    if (s === 'Planning') return '#8B95A6';
+    return '#6B7178'; // Idea
+  }
+
+  function addRoadmapItem() {
+    const input = document.getElementById('roadmapInput');
+    const title = input.value.trim();
+    if (!title) return;
+    roadmapItems.unshift({
+      id: uid(),
+      title: title,
+      status: document.getElementById('roadmapStatusInput').value,
+      createdAt: new Date().toISOString()
+    });
+    saveRoadmap(roadmapItems);
+    input.value = '';
+    renderRoadmap();
+  }
+  function cycleRoadmapStatus(id) {
+    const order = ['Idea', 'Planning', 'In Progress', 'Done'];
+    const item = roadmapItems.find(r => r.id === id);
+    if (!item) return;
+    const idx = order.indexOf(item.status);
+    item.status = order[(idx + 1) % order.length];
+    saveRoadmap(roadmapItems);
+    renderRoadmap();
+  }
+  function deleteRoadmapItem(id) {
+    roadmapItems = roadmapItems.filter(r => r.id !== id);
+    saveRoadmap(roadmapItems);
+    renderRoadmap();
+  }
+  function renderRoadmap() {
+    const listEl = document.getElementById('roadmapList');
+    if (roadmapItems.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center; color:#6B7178; font-size:13px; padding:30px 0; border:1px dashed #23282E; border-radius:12px;">No projects tracked yet. Add one above.</div>';
+      return;
+    }
+    listEl.innerHTML = roadmapItems.map(r => `
+      <div style="display:flex; align-items:center; gap:11px; background:#181D23; border:1px solid #23282E; border-radius:11px; padding:12px 13px; margin-bottom:8px;">
+        <div style="flex:1; font-size:14px;">${escapeHtml(r.title)}</div>
+        <span onclick="cycleRoadmapStatus('${r.id}')" class="mono" style="cursor:pointer; font-size:10.5px; font-weight:700; padding:5px 10px; border-radius:100px; background:${roadmapStatusColor(r.status)}22; color:${roadmapStatusColor(r.status)}; border:1px solid ${roadmapStatusColor(r.status)}55; white-space:nowrap;">${r.status}</span>
+        <button onclick="deleteRoadmapItem('${r.id}')" style="background:none; border:none; color:#5A6068; font-size:14px; cursor:pointer;">🗑</button>
+      </div>
+    `).join('');
+  }
+
+  const MODULES = [
+    { id: 'tasks', icon: '✅', name: 'Task Manager', status: 'Built — local only', live: true },
+    { id: 'notes', icon: '📝', name: 'Notes', status: 'Live', live: true },
+    { id: 'planner', icon: '🗓', name: 'Daily Planner', status: 'Built — local only', live: true },
+    { id: 'calendar', icon: '📅', name: 'Calendar', status: 'Built — local only', live: true },
+    { id: 'shopping', icon: '🛒', name: 'Shopping List', status: 'Built — local only', live: true },
+    { id: 'journal', icon: '🎣', name: 'Fishing Journal', status: 'Built — not synced' },
+    { id: 'roadmap', icon: '🧭', name: 'Project Roadmap', status: 'Built — local only', live: true },
+    { id: 'ideas', icon: '💡', name: 'Idea Dump', status: 'Live', live: true }
+  ];
+
+  function renderModuleGrid() {
+    const grid = document.getElementById('moduleGrid');
+    grid.innerHTML = MODULES.map(m => `
+      <div class="module-card" onclick="openModule('${m.id}')">
+        <div class="module-icon">${m.icon}</div>
+        <div class="module-name display">${m.name}</div>
+        <div class="module-status mono ${m.live ? 'live' : ''}">${m.status}</div>
+      </div>
+    `).join('');
+  }
+
+  function goHome() {
+    document.getElementById('view-home').classList.add('active');
+    document.getElementById('view-module').classList.remove('active');
+    document.getElementById('view-journal').classList.remove('active');
+    document.getElementById('view-tasks').classList.remove('active');
+    document.getElementById('view-planner').classList.remove('active');
+    document.getElementById('view-calendar').classList.remove('active');
+    document.getElementById('view-shopping').classList.remove('active');
+    document.getElementById('view-roadmap').classList.remove('active');
+    document.getElementById('navHome').classList.add('active');
+  }
+
+  function openModule(id) {
+    const m = MODULES.find(x => x.id === id);
+    if (!m) return;
+    document.getElementById('view-home').classList.remove('active');
+    document.getElementById('navHome').classList.remove('active');
+
+    if (id === 'journal') {
+      document.getElementById('view-module').classList.remove('active');
+      document.getElementById('view-journal').classList.add('active');
+      render();
+      return;
+    }
+    if (id === 'tasks') {
+      document.getElementById('view-module').classList.remove('active');
+      document.getElementById('view-tasks').classList.add('active');
+      renderTasks();
+      return;
+    }
+    if (id === 'planner') {
+      document.getElementById('view-module').classList.remove('active');
+      document.getElementById('view-planner').classList.add('active');
+      document.getElementById('plannerDateInput').value = plannerDate;
+      renderPlanner();
+      return;
+    }
+    if (id === 'calendar') {
+      document.getElementById('view-module').classList.remove('active');
+      document.getElementById('view-calendar').classList.add('active');
+      renderCalendar();
+      return;
+    }
+    if (id === 'shopping') {
+      document.getElementById('view-module').classList.remove('active');
+      document.getElementById('view-shopping').classList.add('active');
+      renderShopping();
+      return;
+    }
+    if (id === 'roadmap') {
+      document.getElementById('view-module').classList.remove('active');
+      document.getElementById('view-roadmap').classList.add('active');
+      renderRoadmap();
+      return;
+    }
+    document.getElementById('view-journal').classList.remove('active');
+    document.getElementById('view-tasks').classList.remove('active');
+    document.getElementById('view-planner').classList.remove('active');
+    document.getElementById('view-calendar').classList.remove('active');
+    document.getElementById('view-shopping').classList.remove('active');
+    document.getElementById('view-roadmap').classList.remove('active');
+    document.getElementById('view-module').classList.add('active');
+    document.getElementById('moduleTitle').textContent = m.name;
+    document.getElementById('modulePlaceholderIcon').textContent = m.icon;
+    document.getElementById('modulePlaceholderTitle').textContent = m.live ? 'Live in the full build' : 'Coming soon';
+    document.getElementById('modulePlaceholderSub').textContent = m.live
+      ? 'This module is already working in Mission Control — wiring it into this shell is next.'
+      : 'This module is on the build order but not started yet.';
+  }
+
+  renderModuleGrid();
+</script>
+</body>
+</html>
