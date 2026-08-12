@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Personal OS">
+<meta name="theme-color" content="#12161A">
+<title>Personal OS</title>
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/shared.css">
+<link rel="stylesheet" href="css/journal.css">
+<link rel="stylesheet" href="css/tasks.css">
+<link rel="stylesheet" href="css/planner.css">
+<link rel="stylesheet" href="css/calendar.css">
+<link rel="stylesheet" href="css/shopping.css">
+<link rel="stylesheet" href="css/roadmap.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-badge display">P</div>
+    <div>
+      <div class="brand-title display">Personal OS</div>
+      <div class="brand-sub">Phase 1</div>
+    </div>
+  </div>
+  <div class="status-row mono">
+    <div class="status-dot"></div>
+    <span id="syncStatus">Local only</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="content">
+
+  <!-- HOME: module grid -->
+  <div class="module-view active" id="view-home">
+    <div class="module-grid" id="moduleGrid"></div>
+  </div>
+
+  <!-- Generic "coming soon" placeholder for modules that aren't built yet -->
+  <div class="module-view" id="view-module">
+    <div class="module-header">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="display" style="font-size:19px; font-weight:600;" id="moduleTitle">Module</div>
+    </div>
+    <div class="placeholder">
+      <div class="big" id="modulePlaceholderIcon">🔲</div>
+      <div class="title display" id="modulePlaceholderTitle">Coming soon</div>
+      <div class="sub" id="modulePlaceholderSub">This module hasn't been built yet.</div>
+    </div>
+  </div>
+
+  <!-- Each module fills its own container below via its own JS file, on load. -->
+  <div class="module-view" id="view-journal"></div>
+  <div class="module-view" id="view-tasks"></div>
+  <div class="module-view" id="view-planner"></div>
+  <div class="module-view" id="view-calendar"></div>
+  <div class="module-view" id="view-shopping"></div>
+  <div class="module-view" id="view-roadmap"></div>
+
+</div>
+
+<div class="bottom-nav mono">
+  <div class="nav-item active" id="navHome" onclick="goHome()">
+    <span class="nav-icon">🏠</span><span>Home</span>
+  </div>
+  <div class="nav-item" onclick="openModule('journal')">
+    <span class="nav-icon">🎣</span><span>Journal</span>
+  </div>
+  <div class="nav-item" onclick="openModule('tasks')">
+    <span class="nav-icon">✅</span><span>Tasks</span>
+  </div>
+  <div class="nav-item" onclick="openModule('calendar')">
+    <span class="nav-icon">📅</span><span>Calendar</span>
+  </div>
+  <div class="nav-item" onclick="openModule('notes')">
+    <span class="nav-icon">📝</span><span>Notes</span>
+  </div>
+</div>
+
+<!-- Core: load before any module, since modules call Store/Modules/utils at load time -->
+<script src="js/core/utils.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/app.js"></script>
+
+<!-- Modules: each fills its own #view-<id> container and self-registers with Modules -->
+<script src="js/modules/journal.js"></script>
+<script src="js/modules/tasks.js"></script>
+<script src="js/modules/planner.js"></script>
+<script src="js/modules/calendar.js"></script>
+<script src="js/modules/shopping.js"></script>
+<script src="js/modules/roadmap.js"></script>
+
+</body>
+</html>
