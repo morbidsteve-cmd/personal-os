@@ -1,0 +1,62 @@
+/* Shell chrome: reset, fonts, topbar, bottom nav, home module grid, module view switching */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #12161A; color: #E8E4DA; min-height: 100vh;
+}
+.mono { font-family: 'IBM Plex Mono', monospace; }
+.display { font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px; border-bottom: 1px solid #23282E;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-badge {
+  width: 34px; height: 34px; border-radius: 8px; background: #C98A3F;
+  display: flex; align-items: center; justify-content: center; font-size: 16px; color: #12161A;
+}
+.brand-title { font-size: 17px; font-weight: 600; }
+.brand-sub { font-size: 10.5px; color: #6B7178; letter-spacing: 1px; text-transform: uppercase; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4A9A6A; }
+.status-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6B7178; }
+
+.content { padding: 20px; padding-bottom: 100px; max-width: 640px; margin: 0 auto; }
+
+.module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.module-card {
+  background: #181D23; border: 1px solid #23282E; border-radius: 14px; padding: 18px 16px;
+  cursor: pointer; transition: border-color 0.15s ease;
+}
+.module-card:active { border-color: #C98A3F; }
+.module-icon { font-size: 24px; margin-bottom: 10px; }
+.module-name { font-size: 14.5px; font-weight: 600; margin-bottom: 3px; }
+.module-status { font-size: 10.5px; color: #6B7178; }
+.module-status.live { color: #4A9A6A; }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; background: #181D23;
+  border-top: 1px solid #23282E; display: flex; padding: 8px 4px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+.nav-item {
+  flex: 1; text-align: center; padding: 8px 2px; color: #6B7178; font-size: 10px;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.nav-item.active { color: #C98A3F; }
+.nav-icon { font-size: 18px; }
+
+.module-view { display: none; }
+.module-view.active { display: block; }
+.module-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.back-btn {
+  background: #181D23; border: 1px solid #23282E; color: #E8E4DA; width: 34px; height: 34px;
+  border-radius: 8px; cursor: pointer; font-size: 16px;
+}
+.placeholder {
+  text-align: center; padding: 60px 20px; color: #6B7178; border: 1px dashed #23282E; border-radius: 14px;
+}
+.placeholder .big { font-size: 32px; margin-bottom: 10px; }
+.placeholder .title { color: #E8E4DA; font-size: 16px; margin-bottom: 6px; }
+.placeholder .sub { font-size: 12.5px; }
