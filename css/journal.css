@@ -1,0 +1,208 @@
+/* Fishing Journal — sessions, catches, kit, checklist, gallery */
+
+.serif { font-family: Georgia, 'Times New Roman', serif; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+
+.header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.icon-badge {
+  width: 42px; height: 42px; border-radius: 10px; background: #C98A3F;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(201,162,39,0.35); flex-shrink: 0;
+}
+.header h1 { font-size: 22px; font-weight: 700; margin: 0; }
+.subtitle { color: #6B7178; font-size: 12px; margin-top: 2px; }
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 9px; background: #181D23;
+  border: 1px solid #23282E; color: #C98A3F; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+#importFile { display: none; }
+
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-box { background: #181D23; border-radius: 10px; padding: 12px 10px; border: 1px solid #23282E; }
+.stat-value { font-size: 19px; font-weight: 700; color: #C98A3F; }
+.stat-label { font-size: 10px; color: #6B7178; margin-top: 2px; }
+
+.search-box { position: relative; margin-bottom: 12px; }
+.search-box input {
+  width: 100%; background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+  border-radius: 10px; padding: 11px 14px 11px 36px; font-size: 14px;
+}
+.search-box .icon { position: absolute; left: 12px; top: 11px; color: #6B7178; font-size: 14px; }
+.search-hint { font-size: 11px; color: #5A6068; margin: -8px 0 14px 4px; }
+
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab {
+  flex: 1; text-align: center; padding: 9px 0; border-radius: 9px; font-size: 13px;
+  font-weight: 600; cursor: pointer; background: #181D23; color: #6B7178;
+  border: 1px solid #23282E;
+}
+.tab.active { background: #C98A3F; color: #12161A; border-color: #C98A3F; }
+
+.session-card {
+  background: #181D23; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+  border: 1px solid #23282E; cursor: pointer;
+}
+.session-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.session-location { font-size: 17px; font-weight: 700; }
+.session-date { color: #6B7178; font-size: 12px; }
+.session-sub { color: #9BA0A8; font-size: 12.5px; margin-bottom: 8px; }
+.stars { color: #C98A3F; font-size: 12px; letter-spacing: 1px; }
+.species-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  background: #1F252B; color: #C9CDD3; font-size: 11.5px; padding: 3px 9px;
+  border-radius: 100px; border: 1px solid #2C333B;
+}
+.catch-count { color: #C98A3F; font-size: 12px; font-weight: 600; }
+
+.location-group { margin-bottom: 18px; }
+.location-group-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px; padding: 0 2px;
+}
+.location-group-header .name { font-size: 15px; font-weight: 700; color: #C98A3F; }
+.location-group-header .count { font-size: 11.5px; color: #6B7178; }
+
+.fab {
+  position: fixed; bottom: 92px; right: 22px; width: 56px; height: 56px;
+  border-radius: 28px; background: #C98A3F; border: none; cursor: pointer;
+  font-size: 28px; color: #12161A; box-shadow: 0 6px 20px rgba(201,162,39,0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 10;
+}
+
+/* Rating stars picker */
+.rating-picker { display: flex; gap: 6px; }
+.rating-star {
+  font-size: 26px; cursor: pointer; color: #3A4048; user-select: none; line-height: 1;
+}
+.rating-star.filled { color: #C98A3F; }
+
+/* GPS */
+.gps-row { display: flex; gap: 8px; align-items: center; }
+.gps-row input { flex: 1; }
+.gps-btn {
+  background: #181D23; border: 1px solid #23282E; color: #C98A3F; font-size: 13px;
+  font-weight: 600; padding: 10px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap;
+}
+.gps-coords { font-size: 11.5px; color: #6B7178; margin-top: 5px; }
+.gps-coords a { color: #4A9A6A; }
+
+/* Photos */
+.photo-picker-btn {
+  display: inline-flex; align-items: center; gap: 6px; background: #181D23;
+  border: 1px solid #23282E; color: #C98A3F; font-size: 13px; font-weight: 600;
+  padding: 9px 14px; border-radius: 9px; cursor: pointer;
+}
+.photo-input { display: none; }
+.photo-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.photo-thumb { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid #23282E; }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-thumb .rm {
+  position: absolute; top: 2px; right: 2px; background: rgba(15,42,42,0.85); color: #D99B85;
+  border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+.card-photo-strip { display: flex; gap: 5px; margin-top: 8px; }
+.card-photo-strip img { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; border: 1px solid #23282E; }
+.detail-photo-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.detail-photo-strip img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 1px solid #23282E; }
+.catch-photo-strip { display: flex; gap: 6px; margin-top: 8px; }
+.catch-photo-strip img { width: 50px; height: 50px; border-radius: 7px; object-fit: cover; border: 1px solid #23282E; }
+
+/* Location history hint */
+.location-hint {
+  background: #1F252B; border: 1px solid #2C333B; border-radius: 10px; padding: 10px 12px;
+  margin: -4px 0 12px; font-size: 12.5px; color: #C9CDD3; display: none;
+}
+.location-hint.show { display: block; }
+.location-hint .hint-title { color: #C98A3F; font-weight: 700; font-size: 12px; margin-bottom: 4px; }
+.location-hint .hint-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+
+/* Journal's own sub-nav: Journal / Gallery / Kit / Checklist */
+.main-nav { display: flex; gap: 6px; margin-bottom: 18px; background: #181D23; border-radius: 12px; padding: 4px; border: 1px solid #23282E; overflow-x: auto; }
+.main-nav-item {
+  flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px; font-size: 12px;
+  font-weight: 600; cursor: pointer; color: #6B7178; white-space: nowrap;
+}
+.main-nav-item.active { background: #C98A3F; color: #12161A; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Kit list */
+.kit-category { margin-bottom: 18px; }
+.kit-category-title { font-size: 13px; font-weight: 700; color: #C98A3F; margin-bottom: 8px; padding: 0 2px; }
+.kit-item {
+  display: flex; align-items: center; gap: 10px; background: #181D23; border: 1px solid #23282E;
+  border-radius: 10px; padding: 11px 13px; margin-bottom: 8px;
+}
+.kit-item .kit-name { flex: 1; font-size: 14px; }
+.kit-item .kit-name.need { color: #D99B85; }
+.kit-toggle {
+  font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 100px;
+  border: 1px solid #23282E; cursor: pointer; background: transparent; color: #6B7178;
+}
+.kit-toggle.owned { background: #1F252B; color: #4A9A6A; border-color: #2C333B; }
+.kit-toggle.need-buy { background: #2E1C1C; color: #D99B85; border-color: #4A2A2A; }
+.kit-del { background: none; border: none; color: #5A6068; font-size: 15px; cursor: pointer; padding: 2px 4px; }
+.add-kit-row { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 20px; }
+.add-kit-row input { flex: 1; background: #181D23; color: #E8E4DA; border: 1px solid #23282E; border-radius: 9px; padding: 10px 12px; font-size: 13.5px; }
+.add-kit-row select { background: #181D23; color: #E8E4DA; border: 1px solid #23282E; border-radius: 9px; padding: 10px 8px; font-size: 13px; }
+.add-kit-row button { background: #C98A3F; color: #12161A; border: none; border-radius: 9px; padding: 0 16px; font-weight: 700; cursor: pointer; }
+
+/* Checklist */
+.checklist-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.reset-btn { background: transparent; border: 1px solid #23282E; color: #6B7178; font-size: 12px; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+.checklist-progress { font-size: 12px; color: #6B7178; margin-bottom: 14px; }
+.checklist-category { margin-bottom: 16px; }
+.checklist-category-title { font-size: 13px; font-weight: 700; color: #C98A3F; margin-bottom: 8px; padding: 0 2px; }
+.checklist-item {
+  display: flex; align-items: center; gap: 10px; background: #181D23; border: 1px solid #23282E;
+  border-radius: 10px; padding: 11px 13px; margin-bottom: 7px; cursor: pointer;
+}
+.checklist-item.checked { opacity: 0.55; }
+.checklist-item .box {
+  width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #6B7178; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.checklist-item.checked .box { background: #C98A3F; border-color: #C98A3F; color: #12161A; }
+.checklist-item .label { flex: 1; font-size: 13.5px; }
+.checklist-item.checked .label { text-decoration: line-through; }
+.checklist-del { background: none; border: none; color: #5A6068; font-size: 14px; cursor: pointer; }
+.add-checklist-row { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 20px; }
+.add-checklist-row input { flex: 1; background: #181D23; color: #E8E4DA; border: 1px solid #23282E; border-radius: 9px; padding: 10px 12px; font-size: 13.5px; }
+.add-checklist-row button { background: #C98A3F; color: #12161A; border: none; border-radius: 9px; padding: 0 16px; font-weight: 700; cursor: pointer; }
+
+/* Gallery */
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.gallery-grid img {
+  width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;
+  border: 1px solid #23282E; cursor: pointer;
+}
+
+/* Session detail meta */
+.session-detail-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 10px; color: #9BA0A8; font-size: 13px; }
+.session-notes {
+  background: #181D23; border: 1px solid #23282E; border-radius: 10px; padding: 12px;
+  font-size: 13px; color: #C9CDD3; margin-bottom: 12px; line-height: 1.5;
+}
+.detail-section { margin-bottom: 14px; }
+.detail-section-title { font-size: 11px; font-weight: 700; color: #6B7178; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+.detail-kv { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12.5px; color: #C9CDD3; }
+.catch-item {
+  background: #181D23; border-radius: 12px; padding: 13px; margin-bottom: 10px;
+  border: 1px solid #23282E; position: relative;
+}
+.catch-item .catch-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; }
+.catch-item .catch-actions button { background: none; border: none; font-size: 13px; cursor: pointer; }
+.catch-item .edit-icon { color: #6B7178; }
+.catch-item .del { color: #5A6068; }
+.catch-item .species { font-size: 15px; font-weight: 700; margin-bottom: 4px; padding-right: 44px; }
+.catch-item .meta-row { display: flex; flex-wrap: wrap; gap: 5px 12px; font-size: 12px; color: #9BA0A8; }
+.add-catch-btn {
+  width: 100%; padding: 12px 0; border-radius: 10px; border: 1.5px dashed #3A4048;
+  background: transparent; color: #4A9A6A; font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-bottom: 8px;
+}
+.detail-top-actions { display: flex; gap: 8px; margin-bottom: 4px; }
