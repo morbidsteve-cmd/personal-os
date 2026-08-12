@@ -1,0 +1,9 @@
+/* Daily Planner — date-stepper row, time-blocked entries */
+
+.planner-date-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.planner-date-input {
+  flex: 1; background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+  border-radius: 9px; padding: 9px 10px; font-size: 13.5px; text-align: center;
+}
+.planner-time-input { flex: none; width: 110px; }
+.planner-item-time { color: #C98A3F; font-size: 13px; width: 52px; flex-shrink: 0; }

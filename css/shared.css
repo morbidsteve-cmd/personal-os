@@ -120,3 +120,9 @@
   font-size: 11px; font-weight: 700; color: #6B7178; text-transform: uppercase;
   letter-spacing: 0.5px; margin-bottom: 8px;
 }
+
+/* Small square nav button (‹ ›) — Daily Planner's day-shift, Calendar's month-shift */
+.step-btn {
+  background: #181D23; border: 1px solid #23282E; color: #E8E4DA; width: 36px; height: 36px;
+  border-radius: 9px; cursor: pointer; flex-shrink: 0;
+}
