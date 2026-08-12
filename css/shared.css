@@ -71,3 +71,52 @@
 }
 .empty-state .big { font-size: 30px; margin-bottom: 8px; }
 .empty-state .title { color: #E8E4DA; font-size: 16px; margin-bottom: 4px; }
+
+/* Header spacing shared by every simple list module (Tasks, Planner, Calendar, Shopping, Roadmap) */
+.module-header--tight { margin-bottom: 14px; }
+
+/*
+  "Simple list module" pattern: Tasks, Planner, Calendar and Shopping/Roadmap all follow the same
+  shape (an add-row up top, a list of cards below) and used to each hand-roll identical inline
+  styles for it. Pulled into one place here so a style tweak (e.g. card padding) happens once.
+*/
+.list-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.list-input {
+  flex: 1; background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+  border-radius: 9px; padding: 11px 12px; font-size: 14px;
+}
+.list-select {
+  background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+  border-radius: 9px; padding: 0 8px; font-size: 12.5px;
+}
+.list-add-btn {
+  background: #C98A3F; color: #12161A; border: none; border-radius: 9px;
+  padding: 0 16px; font-weight: 700; cursor: pointer;
+}
+.list-secondary-input {
+  width: 100%; background: #181D23; color: #E8E4DA; border: 1px solid #23282E;
+  border-radius: 9px; padding: 10px 12px; font-size: 13px; margin-bottom: 16px;
+}
+
+.list-card {
+  display: flex; align-items: center; gap: 11px; background: #181D23; border: 1px solid #23282E;
+  border-radius: 11px; padding: 12px 13px; margin-bottom: 8px;
+}
+.list-card.done { opacity: 0.5; }
+.list-checkbox {
+  width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #6B7178; flex-shrink: 0;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.list-checkbox.checked { background: #C98A3F; border-color: #C98A3F; color: #12161A; }
+.list-title { flex: 1; font-size: 14px; color: #E8E4DA; }
+.list-title.done { text-decoration: line-through; color: #6B7178; }
+.list-delete { background: none; border: none; color: #5A6068; font-size: 14px; cursor: pointer; }
+
+.list-empty {
+  text-align: center; color: #6B7178; font-size: 13px; padding: 30px 0;
+  border: 1px dashed #23282E; border-radius: 12px;
+}
+.list-section-label {
+  font-size: 11px; font-weight: 700; color: #6B7178; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 8px;
+}

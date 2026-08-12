@@ -1,0 +1,6 @@
+/* Task Manager — only the bits not already covered by shared.css's list-* pattern */
+
+.task-card { align-items: flex-start; }
+.task-card .list-checkbox { margin-top: 1px; }
+.task-body { flex: 1; }
+.task-meta { display: flex; gap: 10px; margin-top: 5px; font-size: 11px; }
