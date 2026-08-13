@@ -1,2 +1,5 @@
-.claude/ 
-files.zip 
+.claude/
+files.zip
+reference/
+server/data/
+server/node_modules/
