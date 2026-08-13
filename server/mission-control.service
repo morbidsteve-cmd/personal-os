@@ -1,0 +1,23 @@
+[Unit]
+Description=Personal OS Mission Control server (Tasks/Planner/Calendar/Shopping/Roadmap)
+After=network.target
+
+[Service]
+Type=simple
+# EDIT THESE TWO before installing — path to where you cloned the repo, and the
+# Linux user that should own the process (a non-root user is fine and preferred).
+WorkingDirectory=/home/<YOUR_USER>/personal-os/server
+User=<YOUR_USER>
+
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+
+# EDIT MC_TOKEN before installing — must match js/core/config.js's MC_TOKEN on
+# every device that talks to this server. Never leave it as the default once
+# this box is reachable over Tailscale.
+Environment=MC_PORT=4200
+Environment=MC_TOKEN=change-me-before-deploying
+
+[Install]
+WantedBy=multi-user.target
