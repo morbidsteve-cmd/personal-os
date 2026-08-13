@@ -13,11 +13,11 @@ ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5
 
-# EDIT MC_TOKEN before installing — must match js/core/config.js's MC_TOKEN on
-# every device that talks to this server. Never leave it as the default once
-# this box is reachable over Tailscale.
+# Matches js/core/config.js's MC_TOKEN. If you ever regenerate this, update
+# both places together — a mismatch fails silently (client queues forever,
+# never actually lands on the server).
 Environment=MC_PORT=4200
-Environment=MC_TOKEN=change-me-before-deploying
+Environment=MC_TOKEN=f8d0db72f97ee2fccdf30b0c30db4980
 
 [Install]
 WantedBy=multi-user.target
