@@ -60,6 +60,21 @@ function writeStore(key, value) {
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
+// The phone app is always a different origin from this API (different port at
+// minimum), so the browser sends a CORS preflight (OPTIONS) before every PUT.
+// Preflight requests never carry the x-mc-token header — browsers don't attach
+// custom headers to them — so this has to be handled before the token check
+// below, not behind it. The real access boundary here is Tailscale (who can
+// reach this box) plus the token (who can act); CORS's own origin check isn't
+// doing meaningful security work on top of that, so it's left open.
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, x-mc-token');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 // Same shared-secret pattern as fishing-journal.service. Tailscale/your home
 // network is the real gate on who can reach this box at all — this header is
 // just a second, cheap layer on top.
